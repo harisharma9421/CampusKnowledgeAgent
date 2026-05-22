@@ -15,9 +15,14 @@ const unwrapAiResponse = (response) => response.data?.data || response.data || {
 
 const keywordIntentRules = [
   {
+    intent: 'schedule_update',
+    confidence: 0.7,
+    keywords: ['update', 'changed', 'cancelled', 'rescheduled', 'notification'],
+  },
+  {
     intent: 'timetable_query',
     confidence: 0.74,
-    keywords: ['timetable', 'lecture', 'class', 'period', 'today', 'schedule'],
+    keywords: ['timetable', 'lecture', 'class', 'period', 'today', 'tomorrow'],
   },
   {
     intent: 'notice_query',
@@ -33,11 +38,6 @@ const keywordIntentRules = [
     intent: 'faculty_query',
     confidence: 0.71,
     keywords: ['faculty', 'teacher', 'professor', 'mentor', 'contact', 'office'],
-  },
-  {
-    intent: 'schedule_update',
-    confidence: 0.7,
-    keywords: ['update', 'changed', 'cancelled', 'rescheduled', 'notification'],
   },
   {
     intent: 'faq_query',

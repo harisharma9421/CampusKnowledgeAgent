@@ -1,0 +1,72 @@
+{"text":"What is my timetable today?","intent":"timetable_query"}
+{"text":"Show my Monday lecture schedule","intent":"timetable_query"}
+{"text":"Which class do I have first tomorrow?","intent":"timetable_query"}
+{"text":"Tell me the timetable for my division","intent":"timetable_query"}
+{"text":"Do I have a lab after lunch today?","intent":"timetable_query"}
+{"text":"Where is my next lecture?","intent":"timetable_query"}
+{"text":"Show today's periods for my batch","intent":"timetable_query"}
+{"text":"What lectures are scheduled on Friday?","intent":"timetable_query"}
+{"text":"Give my class schedule for this week","intent":"timetable_query"}
+{"text":"Which subject is at 9 AM?","intent":"timetable_query"}
+{"text":"What is the timetable for D2?","intent":"timetable_query"}
+{"text":"Show me practical slots for my batch","intent":"timetable_query"}
+{"text":"Any new notices for my branch?","intent":"notice_query"}
+{"text":"Show latest academic notices","intent":"notice_query"}
+{"text":"Are there exam circulars today?","intent":"notice_query"}
+{"text":"What announcements were posted this week?","intent":"notice_query"}
+{"text":"Show notices for semester five","intent":"notice_query"}
+{"text":"Any deadline notice from academic office?","intent":"notice_query"}
+{"text":"List important notices for computer engineering","intent":"notice_query"}
+{"text":"Show administrative circulars","intent":"notice_query"}
+{"text":"Is there a new placement notice?","intent":"notice_query"}
+{"text":"Find notices about assessment submission","intent":"notice_query"}
+{"text":"What notices expire soon?","intent":"notice_query"}
+{"text":"Show exam schedule notice","intent":"notice_query"}
+{"text":"What events are coming up?","intent":"event_query"}
+{"text":"Show upcoming workshops","intent":"event_query"}
+{"text":"Is there any seminar this month?","intent":"event_query"}
+{"text":"List technical events for my branch","intent":"event_query"}
+{"text":"How can I register for the symposium?","intent":"event_query"}
+{"text":"Any sports events scheduled?","intent":"event_query"}
+{"text":"Show cultural events on campus","intent":"event_query"}
+{"text":"When is the next alumni meet?","intent":"event_query"}
+{"text":"Find events for semester seven students","intent":"event_query"}
+{"text":"What workshops are open for registration?","intent":"event_query"}
+{"text":"Show placement bootcamp event details","intent":"event_query"}
+{"text":"Where is the innovation challenge?","intent":"event_query"}
+{"text":"How do I reset my ERP password?","intent":"faq_query"}
+{"text":"Where can I find exam schedules?","intent":"faq_query"}
+{"text":"What is the process for scholarship documents?","intent":"faq_query"}
+{"text":"How are lab batches assigned?","intent":"faq_query"}
+{"text":"Where do I report wrong profile data?","intent":"faq_query"}
+{"text":"How can I register for campus events?","intent":"faq_query"}
+{"text":"What does the chatbot use for answers?","intent":"faq_query"}
+{"text":"Where are official notices published?","intent":"faq_query"}
+{"text":"How do I contact the academic office?","intent":"faq_query"}
+{"text":"When are internal marks updated?","intent":"faq_query"}
+{"text":"What is my mentor mapping?","intent":"faq_query"}
+{"text":"Can I see notices from other departments?","intent":"faq_query"}
+{"text":"Who is my faculty mentor?","intent":"faculty_query"}
+{"text":"Show faculty contact details","intent":"faculty_query"}
+{"text":"Find professors for data structures","intent":"faculty_query"}
+{"text":"Which teacher handles operating systems?","intent":"faculty_query"}
+{"text":"Give office hours for my mentor","intent":"faculty_query"}
+{"text":"List faculty in computer engineering","intent":"faculty_query"}
+{"text":"Who teaches machine design?","intent":"faculty_query"}
+{"text":"Find electronics department faculty","intent":"faculty_query"}
+{"text":"Show civil engineering professors","intent":"faculty_query"}
+{"text":"Who is available for project guidance?","intent":"faculty_query"}
+{"text":"Give faculty email for database subject","intent":"faculty_query"}
+{"text":"Which professor teaches robotics?","intent":"faculty_query"}
+{"text":"Has my timetable changed?","intent":"schedule_update"}
+{"text":"Any schedule update for today?","intent":"schedule_update"}
+{"text":"Was my lab rescheduled?","intent":"schedule_update"}
+{"text":"Show timetable update notifications","intent":"schedule_update"}
+{"text":"Any class cancelled today?","intent":"schedule_update"}
+{"text":"Did the academic office update my schedule?","intent":"schedule_update"}
+{"text":"Show schedule change alerts","intent":"schedule_update"}
+{"text":"Are there new timetable notifications?","intent":"schedule_update"}
+{"text":"Has tomorrow's lecture been changed?","intent":"schedule_update"}
+{"text":"Any update for my division timetable?","intent":"schedule_update"}
+{"text":"Was the workshop timing changed?","intent":"schedule_update"}
+{"text":"Tell me if any period was rescheduled","intent":"schedule_update"}

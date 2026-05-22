@@ -112,6 +112,15 @@ const main = async () => {
     });
     assertOk('POST /api/chat/query alias', chatAlias, (body) => Boolean(body.success && body.response));
 
+    const intentTest = await request(baseUrl, '/api/ai/test/intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ query: 'Who is my mentor faculty?' }),
+    });
+    assertOk('POST /api/ai/test/intent', intentTest, (body) =>
+      Boolean(body.predicted_intent && body.processing_time_ms >= 0)
+    );
+
     console.log('\nPhase 4 API verification passed.');
   } finally {
     await new Promise((resolve) => server.close(resolve));

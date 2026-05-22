@@ -8,6 +8,7 @@ import psutil
 from fastapi import APIRouter
 from app.utils.response import success_response
 from app.config.settings import settings
+from app.nlp.intent_classifier import get_intent_classifier
 
 router = APIRouter()
 
@@ -33,6 +34,8 @@ async def health_check():
     except Exception:
         memory_info = {"error": "psutil not available"}
 
+    intent_health = get_intent_classifier().health()
+
     return success_response(
         data={
             "service": "ai-engine",
@@ -40,7 +43,7 @@ async def health_check():
             "uptime": f"{uptime_seconds}s",
             "memory": memory_info,
             "models": {
-                "distilbert": "not_loaded",   # Will be 'loaded' in Phase 6
+                "distilbert": intent_health,
                 "sentence_transformer": "not_loaded",
                 "faiss_index": "not_loaded",
                 "gemini": "not_configured",   # Will be 'ready' in Phase 8

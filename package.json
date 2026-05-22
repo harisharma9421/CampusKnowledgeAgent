@@ -27,7 +27,9 @@
     "seed:erp:emulator": "node firebase/seeders/seed-firestore.mjs --emulator",
     "verify:erp:emulator": "node firebase/seeders/verify-firestore-seed.mjs --emulator",
     "verify:erp:emulator:full": "node firebase/seeders/seed-and-verify-firestore.mjs --emulator",
-    "verify:api:emulator": "node backend/scripts/verify-api.mjs --emulator --seed"
+    "verify:api:emulator": "node backend/scripts/verify-api.mjs --emulator --seed",
+    "ai:train:intent": "python ai-engine/scripts/train_intent_model.py",
+    "ai:verify:intent": "python ai-engine/scripts/verify_intent_engine.py"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -38,11 +38,10 @@ async def lifespan(app: FastAPI):
     logger.info(f"  Environment : {settings.environment}")
     logger.info(f"  Host        : {settings.host}:{settings.port}")
     logger.info(f"  Docs        : http://{settings.host}:{settings.port}/docs")
-    logger.info("  Models      : Not loaded (Phase 6+)")
+    logger.info("  Models      : DistilBERT intent engine enabled with offline fallback")
     logger.info("═══════════════════════════════════════════════════")
 
-    # Future: Load models here
-    # await load_distilbert_model()
+    # Models are lazy-loaded on first use to keep local startup responsive.
     # await load_sentence_transformer()
     # await load_faiss_index()
 

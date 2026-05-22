@@ -14,6 +14,7 @@ import eventRoutes from './event.routes.js';
 import facultyRoutes from './faculty.routes.js';
 import faqRoutes from './faq.routes.js';
 import notificationRoutes from './notification.routes.js';
+import aiTestRoutes from './aiTest.routes.js';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.get('/', (_req, res) => {
         'GET  /api/v1/faculty           - Faculty',
         'GET  /api/v1/faq               - FAQ',
         'GET  /api/v1/notifications     - Notifications',
+        'POST /api/v1/ai/test/intent    - Intent diagnostics',
       ],
       timestamp: new Date().toISOString(),
     },
@@ -52,5 +54,6 @@ router.use('/events', eventRoutes);
 router.use('/faculty', facultyRoutes);
 router.use('/faq', faqRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/ai', aiTestRoutes);
 
 export default router;
