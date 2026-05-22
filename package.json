@@ -21,7 +21,12 @@
     "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
     "clean": "npm run clean --workspace=frontend --if-present && npm run clean --workspace=backend --if-present",
     "firebase:emulator": "firebase emulators:start --only firestore --project campus-knowledge-agent-dev --config firebase/firebase.json",
-    "verify:auth": "npm run verify:auth --workspace=backend"
+    "verify:auth": "npm run verify:auth --workspace=backend",
+    "seed:erp": "node firebase/seeders/seed-firestore.mjs",
+    "seed:erp:dry-run": "node firebase/seeders/seed-firestore.mjs --dry-run",
+    "seed:erp:emulator": "node firebase/seeders/seed-firestore.mjs --emulator",
+    "verify:erp:emulator": "node firebase/seeders/verify-firestore-seed.mjs --emulator",
+    "verify:erp:emulator:full": "node firebase/seeders/seed-and-verify-firestore.mjs --emulator"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

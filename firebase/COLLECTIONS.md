@@ -152,4 +152,64 @@ chat_sessions/{sessionId}
 | notices        | 4     |
 | events         | 4     |
 | faq            | 4     |
+| notifications  | 4     |
 | chat_sessions  | 9     |
+
+---
+
+## Phase 3 ERP Seed Dataset
+
+Seed scripts live in `firebase/seeders` and use the same Firebase Admin SDK configuration as
+the backend. The dataset is deterministic, relationship-validated, and marked with
+`source: dummy_erp_seed_v1` so it can be verified or reset safely.
+
+Additional collection:
+
+### `notifications`
+
+ERP notification feed generated and served only through backend APIs.
+
+```
+notifications/{notificationId}
+  id: string
+  type: string              ('notice' | 'event' | 'schedule_update' | 'reminder')
+  title: string
+  message: string
+  priority: string          ('low' | 'normal' | 'high')
+  audience: {
+    role: string            ('student' | 'faculty' | 'admin')
+    branch: string          ('all' | branch key)
+    semester: number        (0 = all semesters)
+    division: string        ('all' | D1-D4)
+    batch: string           ('all' | A1-C4)
+  }
+  relatedCollection: string
+  relatedId: string
+  deliveryChannels: string[]
+  readBy: string[]
+  isActive: boolean
+  scheduledAt: timestamp
+  expiresAt: timestamp
+  createdAt: timestamp
+  updatedAt: timestamp
+```
+
+Generated counts:
+
+- `users`: 274 seeded accounts (240 students, 32 faculty, 2 admins)
+- `students`: 240 students across 4 branches, semesters 3/5/7, divisions D1-D4, batches A1-C4
+- `faculty`: 32 faculty records with subject ownership
+- `timetable`: 48 branch/semester/division timetables
+- `notices`: 36 ERP-style notices
+- `events`: 24 campus events
+- `faq`: 48 knowledge base entries
+- `notifications`: 100 in-app/email notification records
+
+Useful commands:
+
+```bash
+npm run seed:erp:dry-run
+npm run seed:erp:emulator
+npm run verify:erp:emulator
+npm run verify:erp:emulator:full
+```
