@@ -16,6 +16,7 @@ import errorHandler from './middleware/errorHandler.js';
 import notFound from './middleware/notFound.js';
 import healthRoutes from './routes/health.routes.js';
 import apiV1Router from './routes/index.js';
+import chatRoutes from './routes/chat.routes.js';
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use('/api', apiLimiter);
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/health', healthRoutes);
 app.use(`/api/${env.API_VERSION}`, apiV1Router);
+app.use('/api/chat', chatRoutes);
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use(notFound);

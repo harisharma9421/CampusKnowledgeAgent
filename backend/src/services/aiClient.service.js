@@ -1,0 +1,176 @@
+import axios from 'axios';
+import env from '../configs/env.js';
+import logger from '../utils/logger.js';
+
+const client = axios.create({
+  baseURL: env.AI_ENGINE_URL,
+  timeout: env.AI_ENGINE_TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+});
+
+const unwrapAiResponse = (response) => response.data?.data || response.data || {};
+
+const keywordIntentRules = [
+  {
+    intent: 'timetable_query',
+    confidence: 0.74,
+    keywords: ['timetable', 'lecture', 'class', 'period', 'today', 'schedule'],
+  },
+  {
+    intent: 'notice_query',
+    confidence: 0.72,
+    keywords: ['notice', 'announcement', 'circular', 'exam schedule', 'deadline'],
+  },
+  {
+    intent: 'event_query',
+    confidence: 0.72,
+    keywords: ['event', 'workshop', 'seminar', 'meet', 'symposium', 'registration'],
+  },
+  {
+    intent: 'faculty_query',
+    confidence: 0.71,
+    keywords: ['faculty', 'teacher', 'professor', 'mentor', 'contact', 'office'],
+  },
+  {
+    intent: 'schedule_update',
+    confidence: 0.7,
+    keywords: ['update', 'changed', 'cancelled', 'rescheduled', 'notification'],
+  },
+  {
+    intent: 'faq_query',
+    confidence: 0.68,
+    keywords: ['how', 'where', 'what', 'who', 'help', 'faq'],
+  },
+];
+
+const classifyWithKeywords = (query) => {
+  const normalized = query.toLowerCase();
+  const match = keywordIntentRules.find((rule) =>
+    rule.keywords.some((keyword) => normalized.includes(keyword))
+  );
+
+  if (!match) {
+    return {
+      intent: 'faq_query',
+      confidence: 0.55,
+      provider: 'backend_keyword_fallback',
+      status: 'fallback',
+    };
+  }
+
+  return {
+    intent: match.intent,
+    confidence: match.confidence,
+    provider: 'backend_keyword_fallback',
+    status: 'fallback',
+  };
+};
+
+export const classifyIntent = async (query, user) => {
+  const startedAt = Date.now();
+
+  try {
+    const response = await client.post('/infer/classify', {
+      query,
+      user_id: user.id,
+      context: {
+        role: user.role,
+        branch: user.branch,
+        semester: user.semester,
+        division: user.division,
+        batch: user.batch,
+      },
+    });
+
+    const data = unwrapAiResponse(response);
+    const intent = data.predicted_intent || data.intent || 'unknown';
+    const confidence = Number(data.confidence || 0);
+
+    if (intent !== 'unknown' && confidence > 0) {
+      return {
+        intent,
+        confidence,
+        provider: 'ai_engine',
+        status: 'ok',
+        processingTimeMs: Date.now() - startedAt,
+      };
+    }
+
+    return {
+      ...classifyWithKeywords(query),
+      aiIntent: intent,
+      aiConfidence: confidence,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    logger.warn(`[AI] Intent classification unavailable: ${error.message}`);
+    return {
+      ...classifyWithKeywords(query),
+      aiError: error.message,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  }
+};
+
+export const semanticSearch = async (query, topK = 5, collection = null) => {
+  const startedAt = Date.now();
+
+  try {
+    const response = await client.post('/embed/search', {
+      query,
+      top_k: topK,
+      collection,
+    });
+    const data = unwrapAiResponse(response);
+    return {
+      results: data.results || [],
+      provider: 'ai_engine',
+      status: 'ok',
+      processingTimeMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    logger.warn(`[AI] Semantic search unavailable: ${error.message}`);
+    return {
+      results: [],
+      provider: 'backend_ranker',
+      status: 'fallback',
+      error: error.message,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  }
+};
+
+export const enhanceWithGemini = async ({ query, intent, draftResponse, context }) => {
+  const startedAt = Date.now();
+
+  try {
+    const response = await client.post('/gemini/enhance', {
+      query,
+      intent,
+      draft_response: draftResponse,
+      context,
+      instruction:
+        'Improve readability only. Do not add facts, dates, names, rooms, subjects, or notices not present in context.',
+    });
+    const data = unwrapAiResponse(response);
+    return {
+      response: data.response || data.enhanced_response || null,
+      provider: 'gemini',
+      status: data.response || data.enhanced_response ? 'ok' : 'empty',
+      processingTimeMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {
+      response: null,
+      provider: 'backend_formatter',
+      status: 'fallback',
+      error: error.message,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  }
+};
+
+export default { classifyIntent, semanticSearch, enhanceWithGemini };

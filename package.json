@@ -26,7 +26,8 @@
     "seed:erp:dry-run": "node firebase/seeders/seed-firestore.mjs --dry-run",
     "seed:erp:emulator": "node firebase/seeders/seed-firestore.mjs --emulator",
     "verify:erp:emulator": "node firebase/seeders/verify-firestore-seed.mjs --emulator",
-    "verify:erp:emulator:full": "node firebase/seeders/seed-and-verify-firestore.mjs --emulator"
+    "verify:erp:emulator:full": "node firebase/seeders/seed-and-verify-firestore.mjs --emulator",
+    "verify:api:emulator": "node backend/scripts/verify-api.mjs --emulator --seed"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
