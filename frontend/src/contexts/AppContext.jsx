@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 /**
  * AppContext — Global application state
  * Manages top-level UI state: theme, sidebar, notifications.
- * Auth state will be added in Phase 3.
+ * Auth state is managed by AuthContext.
  */
 const AppContext = createContext(null);
 

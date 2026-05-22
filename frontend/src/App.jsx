@@ -1,5 +1,6 @@
 import AppRoutes from './routes/AppRoutes.jsx';
 import { AppProvider } from './contexts/AppContext.jsx';
+import { AuthProvider } from './contexts/AuthContext.jsx';
 
 /**
  * Root Application Component
@@ -8,7 +9,9 @@ import { AppProvider } from './contexts/AppContext.jsx';
 function App() {
   return (
     <AppProvider>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </AppProvider>
   );
 }

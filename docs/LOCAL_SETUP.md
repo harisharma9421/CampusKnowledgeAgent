@@ -34,7 +34,40 @@ cp frontend/.env.example frontend/.env
 
 ```bash
 cp backend/.env.example backend/.env
-# Edit backend/.env - add Firebase credentials when available
+```
+
+**Phase 2 — Authentication (choose one)**
+
+*Option A — Firestore Emulator (recommended for local dev)*
+
+```bash
+# In backend/.env
+FIREBASE_USE_EMULATOR=true
+FIREBASE_PROJECT_ID=campus-knowledge-agent-dev
+JWT_SECRET=local-dev-jwt-secret-change-me
+
+# Terminal 1 — Firestore emulator
+npm run firebase:emulator
+
+# Terminal 2 — Backend API
+npm run dev:backend
+```
+
+*Option B — Firebase Cloud*
+
+Add your service account values to `backend/.env`:
+
+```env
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account@...
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+JWT_SECRET=your-production-jwt-secret
+```
+
+Verify auth APIs:
+
+```bash
+npm run verify:auth
 ```
 
 ### AI Engine
@@ -139,7 +172,6 @@ cd ai-engine
 pip install -r requirements.txt
 ```
 
-**Firebase warnings on backend startup**
+**Firebase / auth errors**
 
-This is expected in Phase 1. Firebase credentials are not yet configured.
-The backend will start normally and log a warning.
+Ensure Firestore is reachable: either start the emulator (`npm run firebase:emulator`) or configure cloud credentials in `backend/.env`. Auth routes return `503` when Firestore is unavailable.

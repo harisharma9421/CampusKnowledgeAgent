@@ -42,10 +42,12 @@ apiClient.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
 
-      // Handle 401 — clear token and redirect to login (Phase 3)
       if (status === 401) {
         localStorage.removeItem('campus_token');
-        // window.location.href = '/login'; // Uncomment in Phase 3
+        localStorage.removeItem('campus_user');
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
       }
 
       // Normalize error shape

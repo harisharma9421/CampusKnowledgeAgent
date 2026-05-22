@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import Logo from '../ui/Logo.jsx';
 
 /**
@@ -7,6 +9,16 @@ import Logo from '../ui/Logo.jsx';
  */
 const Navbar = () => {
   const { toggleSidebar, theme, toggleTheme } = useApp();
+  const { user, logout } = useAuth();
+
+  const initials = user?.displayName
+    ? user.displayName
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'U';
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 bg-white border-b border-surface-200 shadow-xs lg:px-6">
@@ -50,13 +62,26 @@ const Navbar = () => {
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full" />
         </button>
 
-        {/* User avatar (placeholder — auth in Phase 3) */}
-        <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-surface-100 transition-colors">
-          <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-semibold">
-            U
-          </div>
-          <span className="hidden sm:block text-sm font-medium text-surface-700">Student</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-surface-100 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-semibold">
+              {initials}
+            </div>
+            <span className="hidden sm:block text-sm font-medium text-surface-700 max-w-[120px] truncate">
+              {user?.displayName || 'User'}
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="btn-ghost text-xs hidden md:inline-flex"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -6,8 +6,7 @@
 
 import { Router } from 'express';
 
-// Future route modules will be imported and mounted here
-// import authRoutes from './auth.routes.js';
+import authRoutes from './auth.routes.js';
 // import chatRoutes from './chat.routes.js';
 // import timetableRoutes from './timetable.routes.js';
 // import noticeRoutes from './notice.routes.js';
@@ -30,8 +29,11 @@ router.get('/', (_req, res) => {
       availableRoutes: [
         'GET  /api/v1/           — API info',
         'GET  /health            — Health check',
-        // Future routes will be listed here
-        'POST /api/v1/auth/login — [Phase 3] Authentication',
+        'POST /api/v1/auth/register — Register account',
+        'POST /api/v1/auth/login    — Login',
+        'GET  /api/v1/auth/me       — Current user (protected)',
+        'GET  /api/v1/auth/verify   — Verify JWT',
+        'POST /api/v1/auth/logout   — Logout',
         'POST /api/v1/chat       — [Phase 6] AI Chatbot',
         'GET  /api/v1/timetable  — [Phase 5] Timetable',
         'GET  /api/v1/notices    — [Phase 5] Notices',
@@ -44,8 +46,7 @@ router.get('/', (_req, res) => {
   });
 });
 
-// Mount route modules here as they are implemented
-// router.use('/auth', authRoutes);
+router.use('/auth', authRoutes);
 // router.use('/chat', chatRoutes);
 // router.use('/timetable', timetableRoutes);
 // router.use('/notices', noticeRoutes);

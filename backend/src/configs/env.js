@@ -37,6 +37,8 @@ const env = {
   FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY
     ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
     : '',
+  FIREBASE_USE_EMULATOR: process.env.FIREBASE_USE_EMULATOR === 'true',
+  FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080',
 
   // JWT
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-in-production',

@@ -1,5 +1,6 @@
 import Card, { CardBody, CardHeader } from '../components/ui/Card.jsx';
 import Badge from '../components/ui/Badge.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 /**
  * DashboardPage — Main application dashboard
@@ -7,19 +8,23 @@ import Badge from '../components/ui/Badge.jsx';
  * Data will be populated in later phases.
  */
 const DashboardPage = () => {
+  const { user } = useAuth();
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div>
         <h1 className="section-title">Dashboard</h1>
-        <p className="section-subtitle">Welcome to Campus Knowledge Agent</p>
+        <p className="section-subtitle">
+          Welcome back{user?.displayName ? `, ${user.displayName}` : ''} — {user?.role} dashboard
+        </p>
       </div>
 
       {/* ── System Status Banner ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-200">
         <div className="w-2.5 h-2.5 rounded-full bg-primary-500 animate-pulse-slow shrink-0" />
         <p className="text-sm text-primary-700 font-medium">
-          Phase 1 — Foundation complete. Backend API and AI Engine will be connected in upcoming phases.
+          Phase 2 — Firebase authentication and JWT authorization are active. Academic APIs arrive in Phase 4.
         </p>
       </div>
 
@@ -143,8 +148,8 @@ const statCards = [
 
 const roadmapItems = [
   { phase: 1, title: 'Monorepo Foundation', status: 'complete', description: 'React frontend, Node.js backend, Python AI engine scaffolding' },
-  { phase: 2, title: 'Firebase Setup', status: 'upcoming', description: 'Firestore schema, collections, and dummy ERP dataset' },
-  { phase: 3, title: 'Authentication', status: 'upcoming', description: 'JWT-based auth with role-based access control' },
+  { phase: 2, title: 'Firebase + Authentication', status: 'complete', description: 'Firestore users, JWT auth, login/register, protected routes' },
+  { phase: 3, title: 'Dummy ERP Dataset', status: 'upcoming', description: '200+ students, timetables, notices, events, faculty seeders' },
   { phase: 4, title: 'Dummy ERP Dataset', status: 'upcoming', description: '200+ students, timetables, notices, events, faculty' },
   { phase: 5, title: 'REST API Layer', status: 'upcoming', description: 'All academic data endpoints with Firebase integration' },
   { phase: 6, title: 'DistilBERT Intent Engine', status: 'upcoming', description: 'NLP intent classification for academic queries' },
@@ -158,7 +163,7 @@ const techStack = [
   { name: 'Tailwind CSS', emoji: '🎨', version: '3.4', status: 'active' },
   { name: 'Node.js + Express', emoji: '🟢', version: '4.19', status: 'active' },
   { name: 'Python FastAPI', emoji: '🐍', version: '0.111', status: 'active' },
-  { name: 'Firebase Firestore', emoji: '🔥', version: 'Phase 2', status: 'pending' },
+  { name: 'Firebase Firestore', emoji: '🔥', version: 'Active', status: 'active' },
   { name: 'DistilBERT', emoji: '🧠', version: 'Phase 6', status: 'pending' },
   { name: 'FAISS', emoji: '🔍', version: 'Phase 7', status: 'pending' },
   { name: 'Gemini AI', emoji: '🤖', version: 'Phase 8', status: 'pending' },

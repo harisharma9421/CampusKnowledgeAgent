@@ -19,12 +19,15 @@
     "format": "prettier --write \"**/*.{js,jsx,json,md,css}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{js,jsx,json,md,css}\" --ignore-path .prettierignore",
     "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
-    "clean": "npm run clean --workspace=frontend --if-present && npm run clean --workspace=backend --if-present"
+    "clean": "npm run clean --workspace=frontend --if-present && npm run clean --workspace=backend --if-present",
+    "firebase:emulator": "firebase emulators:start --only firestore --project campus-knowledge-agent-dev --config firebase/firebase.json",
+    "verify:auth": "npm run verify:auth --workspace=backend"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "concurrently": "^9.2.1",
     "eslint": "^10.4.0",
+    "firebase-tools": "^14.27.0",
     "globals": "^17.6.0",
     "prettier": "^3.8.3",
     "vite": "^8.0.14"
@@ -32,6 +35,9 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0",
     "npm": ">=10.0.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   },
   "keywords": [
     "campus",

@@ -145,7 +145,7 @@ chat_sessions/{sessionId}
 
 | Collection     | Phase |
 |----------------|-------|
-| users          | 3     |
+| users          | 2     |
 | students       | 4     |
 | faculty        | 4     |
 | timetable      | 4     |

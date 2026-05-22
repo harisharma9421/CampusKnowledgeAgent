@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import Logo from '../ui/Logo.jsx';
 
 /**
@@ -66,8 +67,25 @@ const navItems = [
  * Sidebar — Primary navigation panel
  * Responsive: hidden on mobile (toggled via hamburger), always visible on lg+.
  */
+const branchLabels = {
+  computer_engineering: 'Computer Engineering',
+  electronics_engineering: 'Electronics Engineering',
+  civil_engineering: 'Civil Engineering',
+  mechanical_engineering: 'Mechanical Engineering',
+};
+
 const Sidebar = () => {
   const { sidebarOpen, closeSidebar } = useApp();
+  const { user } = useAuth();
+
+  const initials = user?.displayName
+    ? user.displayName
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'U';
 
   return (
     <aside
@@ -107,11 +125,15 @@ const Sidebar = () => {
       <div className="p-4 border-t border-surface-200">
         <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-surface-50">
           <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-            S
+            {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-surface-800 truncate">Student User</p>
-            <p className="text-xs text-surface-500 truncate">Computer Engineering</p>
+            <p className="text-sm font-medium text-surface-800 truncate">
+              {user?.displayName || 'User'}
+            </p>
+            <p className="text-xs text-surface-500 truncate capitalize">
+              {user?.branch ? branchLabels[user.branch] || user.branch : user?.role || 'Member'}
+            </p>
           </div>
         </div>
       </div>

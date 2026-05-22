@@ -5,6 +5,7 @@
 
 import asyncHandler from '../utils/asyncHandler.js';
 import env from '../configs/env.js';
+import { isFirebaseReady } from '../configs/firebase.js';
 
 /**
  * GET /health
@@ -25,6 +26,14 @@ export const getHealth = asyncHandler(async (_req, res) => {
       memory: {
         heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
         heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
+      },
+      firebase: {
+        connected: isFirebaseReady(),
+        emulator: env.FIREBASE_USE_EMULATOR,
+      },
+      auth: {
+        enabled: true,
+        strategy: 'jwt',
       },
       timestamp: new Date().toISOString(),
     },

@@ -13,15 +13,12 @@ const LandingPage = () => {
         <Logo size="md" linkTo={false} />
         <nav className="flex items-center gap-4">
           <Link
-            to="/dashboard"
+            to="/login"
             className="text-sm font-medium text-surface-300 hover:text-white transition-colors"
           >
-            Dashboard
+            Sign in
           </Link>
-          <Link
-            to="/dashboard"
-            className="btn-primary text-sm px-4 py-2 rounded-lg"
-          >
+          <Link to="/register" className="btn-primary text-sm px-4 py-2 rounded-lg">
             Get Started
           </Link>
         </nav>
@@ -53,10 +50,10 @@ const LandingPage = () => {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-4 animate-slide-up">
           <Link
-            to="/dashboard"
+            to="/login"
             className="btn bg-primary-600 hover:bg-primary-500 text-white px-8 py-3 text-base rounded-xl shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
           >
-            Open Dashboard
+            Sign in to Dashboard
           </Link>
           <a
             href="https://github.com/harisharma9421/CampusKnowledgeAgent"
