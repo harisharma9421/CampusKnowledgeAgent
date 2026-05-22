@@ -1,0 +1,23 @@
+// ============================================================
+// Firestore Security Rules — Campus Knowledge Agent
+// IMPORTANT: These rules are examples. Customize before deploying.
+// All data access goes through the backend API (Node.js).
+// The frontend NEVER directly accesses Firestore.
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Default: Deny all direct client access ──────────────────────────────
+    // All reads/writes must go through the backend API using Admin SDK.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // NOTE: When using Firebase Admin SDK (server-side), security rules
+    // are bypassed. These rules only apply to client-side SDK access.
+    // Since our architecture uses Admin SDK exclusively, these rules
+    // serve as documentation of intended access patterns.
+  }
+}

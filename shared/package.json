@@ -1,0 +1,11 @@
+{
+  "name": "@campus/shared",
+  "version": "1.0.0",
+  "description": "Shared constants, utilities, and API contracts for Campus Knowledge Agent",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint src --ext .js"
+  },
+  "keywords": [],
+  "license": "MIT"
+}

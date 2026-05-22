@@ -1,0 +1,43 @@
+{
+  "_comment": "Firestore composite indexes for Campus Knowledge Agent. Deploy with: firebase deploy --only firestore:indexes",
+  "indexes": [
+    {
+      "_comment": "Query notices by branch and date",
+      "collectionGroup": "notices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "branch", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "_comment": "Query events by date range",
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "eventDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "_comment": "Query timetable by branch, semester, division",
+      "collectionGroup": "timetable",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "branch", "order": "ASCENDING" },
+        { "fieldPath": "semester", "order": "ASCENDING" },
+        { "fieldPath": "division", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "_comment": "Query students by branch and batch",
+      "collectionGroup": "students",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "branch", "order": "ASCENDING" },
+        { "fieldPath": "batch", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

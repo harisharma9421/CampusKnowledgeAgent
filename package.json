@@ -1,0 +1,47 @@
+{
+  "name": "campus-knowledge-agent",
+  "version": "1.0.0",
+  "description": "AI-Powered Smart Campus Chatbot System — Monorepo Root",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend",
+    "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
+    "format": "prettier --write \"**/*.{js,jsx,json,md,css}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,jsx,json,md,css}\" --ignore-path .prettierignore",
+    "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
+    "clean": "npm run clean --workspace=frontend --if-present && npm run clean --workspace=backend --if-present"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "vite": "^8.0.14"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0",
+    "npm": ">=10.0.0"
+  },
+  "keywords": [
+    "campus",
+    "chatbot",
+    "ai",
+    "nlp",
+    "react",
+    "nodejs",
+    "fastapi"
+  ],
+  "author": "Campus Knowledge Agent Team",
+  "license": "MIT"
+}
