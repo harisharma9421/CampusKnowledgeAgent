@@ -2,7 +2,30 @@ import asyncHandler from '../utils/asyncHandler.js';
 import * as aiClient from '../services/aiClient.service.js';
 import * as academicService from '../services/academic.service.js';
 import * as chatService from '../services/chat.service.js';
+import * as aiDiagnostics from '../services/aiDiagnostics.service.js';
 import { flattenAcademicContext, toSemanticDocuments } from '../services/semanticRetrieval.service.js';
+
+export const testHealth = asyncHandler(async (_req, res) => {
+  const [health, faiss] = await Promise.all([
+    aiClient.getHealth(),
+    aiClient.getFaissHealth(),
+  ]);
+
+  return res.status(health.status === 'ok' ? 200 : 503).json({
+    status: health.status,
+    provider: health.provider,
+    processing_time_ms: health.processingTimeMs,
+    ai_engine: health,
+    faiss,
+    diagnostics: {
+      distilbert: health.models?.distilbert,
+      sentence_transformer: health.models?.sentence_transformer,
+      faiss_index: health.models?.faiss_index,
+      gemini: health.models?.gemini,
+    },
+    error: health.error,
+  });
+});
 
 export const testIntent = asyncHandler(async (req, res) => {
   const result = await aiClient.classifyIntent(req.body.query, req.user);
@@ -11,6 +34,10 @@ export const testIntent = asyncHandler(async (req, res) => {
     query: req.body.query,
     predicted_intent: result.intent,
     confidence: result.confidence,
+    all_intents: result.allIntents,
+    model: result.model,
+    model_status: result.modelStatus,
+    fallback_reason: result.fallbackReason,
     processing_time_ms: result.processingTimeMs,
     provider: result.provider,
     status: result.status,
@@ -36,6 +63,7 @@ export const testEmbedding = asyncHandler(async (req, res) => {
     texts_count: result.texts_count || texts.length,
     dimensions: result.dimensions,
     embeddings: result.embeddings,
+    diagnostics: aiDiagnostics.summarizeEmbeddingDiagnostics(result),
     processing_time_ms: result.processingTimeMs,
     provider: result.provider,
     status: result.status,
@@ -61,6 +89,10 @@ export const testSemanticSearch = asyncHandler(async (req, res) => {
       ...result.diagnostics,
       candidate_count: corpus.documents.length,
       collections: [...new Set(corpus.documents.map((document) => document.collection))],
+      retrieval_quality: aiDiagnostics.scoreRetrievalQuality(
+        result.results,
+        result.diagnostics?.threshold
+      ),
     },
     processing_time_ms: result.processingTimeMs,
     provider: result.provider,
@@ -135,19 +167,13 @@ export const testPipeline = asyncHandler(async (req, res) => {
   return res.status(200).json({
     ...result,
     diagnostics: {
-      intent: {
-        label: result.intent,
-        confidence: result.confidence,
-      },
-      ai_service: result.metadata.ai_service,
-      gemini: result.metadata.gemini,
-      retrieval: result.metadata.retrieval,
-      pipeline_timing_ms: result.metadata.processing_time_ms,
+      ...aiDiagnostics.summarizePipelineDiagnostics(result),
     },
   });
 });
 
 export default {
+  testHealth,
   testIntent,
   testEmbedding,
   testSemanticSearch,

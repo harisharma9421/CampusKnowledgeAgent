@@ -41,6 +41,7 @@ router.get('/', (_req, res) => {
         'GET  /api/v1/notifications     - Notifications',
         'GET  /api/v1/notifications/health - Notification service health',
         'POST /api/v1/notifications/trigger - Trigger academic notification',
+        'GET  /api/v1/ai/test/health    - AI engine diagnostics',
         'POST /api/v1/ai/test/intent    - Intent diagnostics',
         'POST /api/v1/ai/test/embedding - Embedding diagnostics',
         'POST /api/v1/ai/test/semantic-search - Semantic retrieval diagnostics',

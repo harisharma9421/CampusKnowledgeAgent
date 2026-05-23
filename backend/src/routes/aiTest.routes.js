@@ -11,6 +11,7 @@ import {
   testEmbedding,
   testFaissHealth,
   testGemini,
+  testHealth,
   testIntent,
   testPipeline,
   testSemanticSearch,
@@ -18,6 +19,7 @@ import {
 
 const router = Router();
 
+router.get('/test/health', authenticate, testHealth);
 router.get('/test/faiss-health', authenticate, testFaissHealth);
 router.post('/test/intent', authenticate, validateBody(chatQuerySchema), testIntent);
 router.post('/test/embedding', authenticate, validateBody(embeddingTestSchema), testEmbedding);

@@ -93,6 +93,10 @@ export const classifyIntent = async (query, user) => {
       return {
         intent,
         confidence,
+        allIntents: data.all_intents || [],
+        model: data.model,
+        modelStatus: data.model_status,
+        fallbackReason: data.fallback_reason,
         provider: 'ai_engine',
         status: 'ok',
         processingTimeMs: Date.now() - startedAt,
@@ -133,6 +137,28 @@ export const generateEmbeddings = async (texts) => {
     logger.warn(`[AI] Embedding generation unavailable: ${error.message}`);
     return {
       embeddings: [],
+      provider: 'ai_engine',
+      status: 'error',
+      error: error.message,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  }
+};
+
+export const getHealth = async () => {
+  const startedAt = Date.now();
+
+  try {
+    const response = await client.get('/health');
+    return {
+      ...unwrapAiResponse(response),
+      provider: 'ai_engine',
+      status: 'ok',
+      processingTimeMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    logger.warn(`[AI] Health check unavailable: ${error.message}`);
+    return {
       provider: 'ai_engine',
       status: 'error',
       error: error.message,
@@ -246,4 +272,11 @@ export const enhanceWithGemini = async ({ query, intent, draftResponse, context 
   }
 };
 
-export default { classifyIntent, generateEmbeddings, semanticSearch, getFaissHealth, enhanceWithGemini };
+export default {
+  classifyIntent,
+  generateEmbeddings,
+  getHealth,
+  semanticSearch,
+  getFaissHealth,
+  enhanceWithGemini,
+};
