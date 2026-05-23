@@ -1,6 +1,10 @@
 import * as academicService from './academic.service.js';
 import * as aiClient from './aiClient.service.js';
-import { flattenAcademicContext, rankDocuments } from './semanticRetrieval.service.js';
+import {
+  flattenAcademicContext,
+  rankDocuments,
+  toSemanticDocuments,
+} from './semanticRetrieval.service.js';
 
 const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
@@ -163,6 +167,15 @@ const recordsFromRanked = (ranked, fallbackRecords) => {
   return ranked.map((item) => item.record);
 };
 
+const rankedFromAiResults = (results) =>
+  (results || []).map((result) => ({
+    collection: result.collection,
+    id: result.id,
+    score: result.score,
+    record: result.record,
+    searchText: result.text,
+  }));
+
 const buildDraftResponse = (intent, query, context, rankedDocuments) => {
   if (intent === 'timetable_query') {
     return buildTimetableResponse(context, query);
@@ -199,8 +212,24 @@ export const processChatQuery = async ({ query, user }) => {
   const intentResult = await aiClient.classifyIntent(query, user);
   const context = await collectIntentContext(intentResult.intent, query, user);
   const documents = flattenAcademicContext(context);
-  const aiSemanticResult = await aiClient.semanticSearch(query, 5);
-  const rankedDocuments = rankDocuments(query, documents, { limit: 5 });
+  const aiDocuments = toSemanticDocuments(documents);
+  const aiSemanticResult = documents.length
+    ? await aiClient.semanticSearch({
+        query,
+        topK: 5,
+        documents: aiDocuments,
+        namespace: `chat:${user.id}:${intentResult.intent}`,
+      })
+    : {
+        results: [],
+        diagnostics: { documentCount: 0 },
+        provider: 'ai_engine',
+        status: 'skipped',
+      };
+  const rankedDocuments =
+    aiSemanticResult.status === 'ok' && aiSemanticResult.results.length
+      ? rankedFromAiResults(aiSemanticResult.results)
+      : rankDocuments(query, documents, { limit: 5 });
   const draftResponse = buildDraftResponse(intentResult.intent, query, context, rankedDocuments);
   const geminiResult = await aiClient.enhanceWithGemini({
     query,
@@ -235,6 +264,9 @@ export const processChatQuery = async ({ query, user }) => {
       retrieval: {
         candidate_count: documents.length,
         ranked_count: rankedDocuments.length,
+        semantic_matches: aiSemanticResult.results?.length || 0,
+        semantic_threshold: aiSemanticResult.diagnostics?.threshold,
+        embedding_dimension: aiSemanticResult.diagnostics?.embeddingDimension,
       },
     },
   };

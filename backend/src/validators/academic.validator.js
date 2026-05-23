@@ -92,6 +92,24 @@ export const chatQuerySchema = z.object({
   sessionId: z.string().trim().min(1).max(120).optional(),
 });
 
+export const embeddingTestSchema = z
+  .object({
+    query: z.string().trim().min(2).max(1000).optional(),
+    text: z.string().trim().min(2).max(2000).optional(),
+    texts: z.array(z.string().trim().min(2).max(2000)).min(1).max(20).optional(),
+  })
+  .refine((value) => value.query || value.text || value.texts?.length, {
+    message: 'Provide query, text, or texts for embedding diagnostics.',
+  });
+
+export const semanticSearchTestSchema = z.object({
+  query: z.string().trim().min(2).max(1000),
+  topK: z.coerce.number().int().min(1).max(20).optional(),
+  top_k: z.coerce.number().int().min(1).max(20).optional(),
+  collection: z.enum(['faq', 'notices', 'events', 'timetable', 'faculty', 'notifications']).optional(),
+  threshold: z.coerce.number().min(0).max(1).optional(),
+});
+
 export const notificationParamsSchema = z.object({
   id: z.string().trim().min(1).max(160),
 });

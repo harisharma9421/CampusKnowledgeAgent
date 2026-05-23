@@ -101,6 +101,8 @@ async def root():
             "inference": "POST /infer/query",
             "classify": "POST /infer/classify",
             "embed": "POST /embed/generate",
+            "index": "POST /embed/index",
             "search": "POST /embed/search",
+            "faiss_health": "GET /embed/faiss-health",
         },
     }

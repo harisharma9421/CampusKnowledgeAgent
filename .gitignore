@@ -72,6 +72,7 @@ dmypy.json
 models/weights/
 ai-engine/models/
 vectorstore/index/
+ai-engine/vectorstore/index/
 embeddings/cache/
 
 # ---- IDE / Editor ----

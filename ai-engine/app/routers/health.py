@@ -9,6 +9,7 @@ from fastapi import APIRouter
 from app.utils.response import success_response
 from app.config.settings import settings
 from app.nlp.intent_classifier import get_intent_classifier
+from app.search.semantic_engine import semantic_engine
 
 router = APIRouter()
 
@@ -35,6 +36,7 @@ async def health_check():
         memory_info = {"error": "psutil not available"}
 
     intent_health = get_intent_classifier().health()
+    semantic_health = semantic_engine.health()
 
     return success_response(
         data={
@@ -44,8 +46,17 @@ async def health_check():
             "memory": memory_info,
             "models": {
                 "distilbert": intent_health,
-                "sentence_transformer": "not_loaded",
-                "faiss_index": "not_loaded",
+                "sentence_transformer": {
+                    "status": semantic_health["model_status"],
+                    "model": semantic_health["model"],
+                    "embedding_dimension": semantic_health["embedding_dimension"],
+                    "error": semantic_health["model_error"],
+                },
+                "faiss_index": {
+                    "status": semantic_health["status"],
+                    "index_dir": semantic_health["faiss_index_dir"],
+                    "persisted_indexes": semantic_health["persisted_indexes"],
+                },
                 "gemini": "not_configured",   # Will be 'ready' in Phase 8
             },
         },

@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     distilbert_model_path: str = "models/distilbert"
     sentence_transformer_model: str = "all-MiniLM-L6-v2"
     faiss_index_path: str = "vectorstore/index/campus.index"
+    embedding_batch_size: int = 32
+    semantic_similarity_threshold: float = 0.32
 
     # Google Vertex AI / Gemini
     google_cloud_project: str = ""

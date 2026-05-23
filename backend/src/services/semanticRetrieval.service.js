@@ -20,11 +20,15 @@ const buildSearchText = (document) =>
     document.subject,
     document.subjects?.join(' '),
     document.category,
+    document.room,
+    document.startTime,
+    document.endTime,
+    document.day,
   ]
     .filter(Boolean)
     .join(' ');
 
-export const rankDocuments = (query, documents, { limit = 5 } = {}) => {
+export const rankDocuments = (query, documents, { limit = 5, minScore = 0.12 } = {}) => {
   const queryTokens = unique(tokenize(query));
   const phrase = String(query || '').trim().toLowerCase();
 
@@ -42,7 +46,7 @@ export const rankDocuments = (query, documents, { limit = 5 } = {}) => {
         score: Number(score.toFixed(4)),
       };
     })
-    .filter((document) => document.score > 0)
+    .filter((document) => document.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 
@@ -51,6 +55,27 @@ export const rankDocuments = (query, documents, { limit = 5 } = {}) => {
 
 export const flattenAcademicContext = (context) => {
   const documents = [];
+
+  context.timetable?.forEach((record) => {
+    Object.entries(record.schedule || {}).forEach(([day, slots]) => {
+      (slots || []).forEach((slot, index) => {
+        const slotId = `${record.id || `${record.branch}-${record.semester}-${record.division}`}:${day}:${index}`;
+        documents.push({
+          collection: 'timetable',
+          id: slotId,
+          record: {
+            ...slot,
+            timetableId: record.id,
+            branch: record.branch,
+            semester: record.semester,
+            division: record.division,
+            day,
+          },
+          searchText: `${day} ${slot.startTime} ${slot.endTime} ${slot.subject} ${slot.facultyName} ${slot.room}`,
+        });
+      });
+    });
+  });
 
   context.notices?.forEach((record) => {
     documents.push({
@@ -102,4 +127,20 @@ export const flattenAcademicContext = (context) => {
   return documents;
 };
 
-export default { rankDocuments, flattenAcademicContext };
+const titleFromRecord = (record = {}) =>
+  record.title || record.displayName || record.subject || record.question || record.category || null;
+
+export const toSemanticDocuments = (documents) =>
+  documents.map((document) => ({
+    id: document.id,
+    collection: document.collection,
+    text: document.searchText,
+    title: titleFromRecord(document.record),
+    metadata: {
+      collection: document.collection,
+      id: document.id,
+    },
+    record: document.record,
+  }));
+
+export default { rankDocuments, flattenAcademicContext, toSemanticDocuments };

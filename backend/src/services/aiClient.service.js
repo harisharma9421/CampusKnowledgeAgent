@@ -115,7 +115,40 @@ export const classifyIntent = async (query, user) => {
   }
 };
 
-export const semanticSearch = async (query, topK = 5, collection = null) => {
+export const generateEmbeddings = async (texts) => {
+  const startedAt = Date.now();
+
+  try {
+    const response = await client.post('/embed/generate', {
+      texts: Array.isArray(texts) ? texts : [texts],
+    });
+    const data = unwrapAiResponse(response);
+    return {
+      ...data,
+      provider: 'ai_engine',
+      status: 'ok',
+      processingTimeMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    logger.warn(`[AI] Embedding generation unavailable: ${error.message}`);
+    return {
+      embeddings: [],
+      provider: 'ai_engine',
+      status: 'error',
+      error: error.message,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  }
+};
+
+export const semanticSearch = async ({
+  query,
+  topK = 5,
+  collection = null,
+  documents = [],
+  namespace = 'default',
+  threshold,
+}) => {
   const startedAt = Date.now();
 
   try {
@@ -123,10 +156,22 @@ export const semanticSearch = async (query, topK = 5, collection = null) => {
       query,
       top_k: topK,
       collection,
+      documents,
+      namespace,
+      threshold,
     });
     const data = unwrapAiResponse(response);
     return {
       results: data.results || [],
+      diagnostics: {
+        topK: data.top_k,
+        threshold: data.threshold,
+        accepted: data.accepted,
+        embeddingDimension: data.embedding_dimension,
+        documentCount: data.document_count,
+        indexPath: data.index_path,
+        processingTimeMs: data.processing_time_ms,
+      },
       provider: 'ai_engine',
       status: 'ok',
       processingTimeMs: Date.now() - startedAt,
@@ -137,6 +182,28 @@ export const semanticSearch = async (query, topK = 5, collection = null) => {
       results: [],
       provider: 'backend_ranker',
       status: 'fallback',
+      error: error.message,
+      processingTimeMs: Date.now() - startedAt,
+    };
+  }
+};
+
+export const getFaissHealth = async () => {
+  const startedAt = Date.now();
+
+  try {
+    const response = await client.get('/embed/faiss-health');
+    return {
+      ...unwrapAiResponse(response),
+      provider: 'ai_engine',
+      status: 'ok',
+      processingTimeMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    logger.warn(`[AI] FAISS health unavailable: ${error.message}`);
+    return {
+      provider: 'ai_engine',
+      status: 'error',
       error: error.message,
       processingTimeMs: Date.now() - startedAt,
     };
@@ -173,4 +240,4 @@ export const enhanceWithGemini = async ({ query, intent, draftResponse, context 
   }
 };
 
-export default { classifyIntent, semanticSearch, enhanceWithGemini };
+export default { classifyIntent, generateEmbeddings, semanticSearch, getFaissHealth, enhanceWithGemini };
