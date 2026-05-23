@@ -10,6 +10,7 @@ from app.utils.response import success_response
 from app.config.settings import settings
 from app.nlp.intent_classifier import get_intent_classifier
 from app.search.semantic_engine import semantic_engine
+from app.gemini.gemini_client import gemini_enhancer
 
 router = APIRouter()
 
@@ -37,6 +38,7 @@ async def health_check():
 
     intent_health = get_intent_classifier().health()
     semantic_health = semantic_engine.health()
+    gemini_health = gemini_enhancer.health()
 
     return success_response(
         data={
@@ -57,7 +59,7 @@ async def health_check():
                     "index_dir": semantic_health["faiss_index_dir"],
                     "persisted_indexes": semantic_health["persisted_indexes"],
                 },
-                "gemini": "not_configured",   # Will be 'ready' in Phase 8
+                "gemini": gemini_health,
             },
         },
         message="AI Engine is running",

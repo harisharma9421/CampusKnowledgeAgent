@@ -176,7 +176,7 @@ const rankedFromAiResults = (results) =>
     searchText: result.text,
   }));
 
-const buildDraftResponse = (intent, query, context, rankedDocuments) => {
+export const buildDraftResponse = (intent, query, context, rankedDocuments) => {
   if (intent === 'timetable_query') {
     return buildTimetableResponse(context, query);
   }
@@ -200,15 +200,54 @@ const buildDraftResponse = (intent, query, context, rankedDocuments) => {
   return buildFaqResponse(recordsFromRanked(rankedDocuments, context.faq));
 };
 
-const shouldUseGeminiResponse = (geminiResult, draftResponse) => {
+const protectedFactPatterns = [
+  /\b\d{1,2}:\d{2}\s?(?:am|pm)?\b/gi,
+  /\b\d{1,2}\s?(?:am|pm)\b/gi,
+  /\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b/g,
+  /\b\d{4}-\d{2}-\d{2}\b/g,
+  /\b[A-Z]{1,5}-?\d{2,4}\b/g,
+  /\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g,
+];
+
+const collectProtectedFacts = (text) => {
+  const tokens = new Set();
+  protectedFactPatterns.forEach((pattern) => {
+    const matches = String(text || '').match(pattern) || [];
+    matches.forEach((match) => tokens.add(match.toLowerCase()));
+  });
+  return tokens;
+};
+
+const flattenValue = (value) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value !== 'object') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map(flattenValue).join(' ');
+  }
+  return Object.values(value).map(flattenValue).join(' ');
+};
+
+const hasUnsupportedProtectedFacts = (response, draftResponse, context) => {
+  const allowed = collectProtectedFacts(`${draftResponse} ${flattenValue(context)}`);
+  const produced = collectProtectedFacts(response);
+  return [...produced].some((token) => !allowed.has(token));
+};
+
+const shouldUseGeminiResponse = (geminiResult, draftResponse, geminiContext) => {
   if (!geminiResult?.response || geminiResult.status !== 'ok') {
     return false;
   }
-  return geminiResult.response.length <= Math.max(500, draftResponse.length * 2.5);
+  if (geminiResult.response.length > Math.max(500, draftResponse.length * 2.5)) {
+    return false;
+  }
+  return !hasUnsupportedProtectedFacts(geminiResult.response, draftResponse, geminiContext);
 };
 
-export const processChatQuery = async ({ query, user }) => {
-  const startedAt = Date.now();
+export const prepareChatPipeline = async ({ query, user }) => {
   const intentResult = await aiClient.classifyIntent(query, user);
   const context = await collectIntentContext(intentResult.intent, query, user);
   const documents = flattenAcademicContext(context);
@@ -231,16 +270,39 @@ export const processChatQuery = async ({ query, user }) => {
       ? rankedFromAiResults(aiSemanticResult.results)
       : rankDocuments(query, documents, { limit: 5 });
   const draftResponse = buildDraftResponse(intentResult.intent, query, context, rankedDocuments);
+  const geminiContext = {
+    rankedDocuments: rankedDocuments.map(({ collection, id, score }) => ({ collection, id, score })),
+    records: rankedDocuments.map((item) => item.record),
+  };
+
+  return {
+    intentResult,
+    context,
+    documents,
+    aiSemanticResult,
+    rankedDocuments,
+    draftResponse,
+    geminiContext,
+  };
+};
+
+export const processChatQuery = async ({ query, user }) => {
+  const startedAt = Date.now();
+  const {
+    intentResult,
+    documents,
+    aiSemanticResult,
+    rankedDocuments,
+    draftResponse,
+    geminiContext,
+  } = await prepareChatPipeline({ query, user });
   const geminiResult = await aiClient.enhanceWithGemini({
     query,
     intent: intentResult.intent,
     draftResponse,
-    context: {
-      rankedDocuments: rankedDocuments.map(({ collection, id, score }) => ({ collection, id, score })),
-      records: rankedDocuments.map((item) => item.record),
-    },
+    context: geminiContext,
   });
-  const finalResponse = shouldUseGeminiResponse(geminiResult, draftResponse)
+  const finalResponse = shouldUseGeminiResponse(geminiResult, draftResponse, geminiContext)
     ? geminiResult.response
     : draftResponse;
 
@@ -261,6 +323,13 @@ export const processChatQuery = async ({ query, user }) => {
         semantic_search: aiSemanticResult.status,
         gemini: geminiResult.status,
       },
+      gemini: {
+        provider: geminiResult.provider,
+        model: geminiResult.model,
+        latency_ms: geminiResult.geminiProcessingTimeMs,
+        fallback_reason: geminiResult.fallbackReason,
+        validation_error: geminiResult.validationError,
+      },
       retrieval: {
         candidate_count: documents.length,
         ranked_count: rankedDocuments.length,
@@ -272,4 +341,4 @@ export const processChatQuery = async ({ query, user }) => {
   };
 };
 
-export default { processChatQuery };
+export default { processChatQuery, prepareChatPipeline, buildDraftResponse };

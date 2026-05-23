@@ -1,6 +1,7 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import * as aiClient from '../services/aiClient.service.js';
 import * as academicService from '../services/academic.service.js';
+import * as chatService from '../services/chat.service.js';
 import { flattenAcademicContext, toSemanticDocuments } from '../services/semanticRetrieval.service.js';
 
 export const testIntent = asyncHandler(async (req, res) => {
@@ -88,4 +89,69 @@ export const testFaissHealth = asyncHandler(async (_req, res) => {
   });
 });
 
-export default { testIntent, testEmbedding, testSemanticSearch, testFaissHealth };
+export const testGemini = asyncHandler(async (req, res) => {
+  const pipeline = await chatService.prepareChatPipeline({
+    query: req.body.query,
+    user: req.user,
+  });
+  const draftResponse = req.body.draftResponse || pipeline.draftResponse;
+  const result = await aiClient.enhanceWithGemini({
+    query: req.body.query,
+    intent: pipeline.intentResult.intent,
+    draftResponse,
+    context: pipeline.geminiContext,
+  });
+
+  return res.status(200).json({
+    query: req.body.query,
+    intent: pipeline.intentResult.intent,
+    draft_response: draftResponse,
+    response: result.status === 'ok' ? result.response : draftResponse,
+    gemini: {
+      status: result.status,
+      provider: result.provider,
+      model: result.model,
+      latency_ms: result.geminiProcessingTimeMs,
+      fallback_reason: result.fallbackReason,
+      validation_error: result.validationError,
+    },
+    prompt: result.prompt,
+    retrieval: {
+      candidate_count: pipeline.documents.length,
+      ranked_count: pipeline.rankedDocuments.length,
+      semantic_matches: pipeline.aiSemanticResult.results?.length || 0,
+    },
+    processing_time_ms: result.processingTimeMs,
+  });
+});
+
+export const testPipeline = asyncHandler(async (req, res) => {
+  const result = await chatService.processChatQuery({
+    query: req.body.query,
+    user: req.user,
+    sessionId: req.body.sessionId,
+  });
+
+  return res.status(200).json({
+    ...result,
+    diagnostics: {
+      intent: {
+        label: result.intent,
+        confidence: result.confidence,
+      },
+      ai_service: result.metadata.ai_service,
+      gemini: result.metadata.gemini,
+      retrieval: result.metadata.retrieval,
+      pipeline_timing_ms: result.metadata.processing_time_ms,
+    },
+  });
+});
+
+export default {
+  testIntent,
+  testEmbedding,
+  testSemanticSearch,
+  testFaissHealth,
+  testGemini,
+  testPipeline,
+};

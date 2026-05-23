@@ -17,7 +17,7 @@ from loguru import logger
 
 from app.config.settings import settings
 from app.config.logging_config import configure_logging
-from app.routers import health, inference, embeddings
+from app.routers import health, inference, embeddings, gemini
 from app.middleware.error_handler import (
     global_exception_handler,
     validation_exception_handler,
@@ -84,6 +84,7 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.include_router(health.router)
 app.include_router(inference.router)
 app.include_router(embeddings.router)
+app.include_router(gemini.router)
 
 
 # ── Root ──────────────────────────────────────────────────────────────────────
@@ -104,5 +105,7 @@ async def root():
             "index": "POST /embed/index",
             "search": "POST /embed/search",
             "faiss_health": "GET /embed/faiss-health",
+            "gemini": "POST /gemini/enhance",
+            "gemini_health": "GET /gemini/health",
         },
     }

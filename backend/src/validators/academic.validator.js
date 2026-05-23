@@ -110,6 +110,11 @@ export const semanticSearchTestSchema = z.object({
   threshold: z.coerce.number().min(0).max(1).optional(),
 });
 
+export const geminiTestSchema = z.object({
+  query: z.string().trim().min(2).max(1000),
+  draftResponse: z.string().trim().min(2).max(5000).optional(),
+});
+
 export const notificationParamsSchema = z.object({
   id: z.string().trim().min(1).max(160),
 });

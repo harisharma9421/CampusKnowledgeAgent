@@ -223,10 +223,16 @@ export const enhanceWithGemini = async ({ query, intent, draftResponse, context 
         'Improve readability only. Do not add facts, dates, names, rooms, subjects, or notices not present in context.',
     });
     const data = unwrapAiResponse(response);
+    const status = data.status || (data.response || data.enhanced_response ? 'ok' : 'empty');
     return {
       response: data.response || data.enhanced_response || null,
-      provider: 'gemini',
-      status: data.response || data.enhanced_response ? 'ok' : 'empty',
+      prompt: data.prompt,
+      provider: data.provider || 'vertex_ai_gemini',
+      model: data.model,
+      status,
+      fallbackReason: data.fallback_reason,
+      validationError: data.validation_error,
+      geminiProcessingTimeMs: data.processing_time_ms,
       processingTimeMs: Date.now() - startedAt,
     };
   } catch (error) {

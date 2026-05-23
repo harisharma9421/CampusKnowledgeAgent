@@ -43,6 +43,8 @@ router.get('/', (_req, res) => {
         'POST /api/v1/ai/test/embedding - Embedding diagnostics',
         'POST /api/v1/ai/test/semantic-search - Semantic retrieval diagnostics',
         'GET  /api/v1/ai/test/faiss-health - FAISS health',
+        'POST /api/v1/ai/test/gemini   - Gemini enhancement diagnostics',
+        'POST /api/v1/ai/test/pipeline  - Full chatbot pipeline diagnostics',
       ],
       timestamp: new Date().toISOString(),
     },

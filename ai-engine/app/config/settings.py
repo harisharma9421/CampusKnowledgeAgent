@@ -43,7 +43,9 @@ class Settings(BaseSettings):
     # Google Vertex AI / Gemini
     google_cloud_project: str = ""
     google_cloud_location: str = "us-central1"
-    gemini_model: str = "gemini-1.5-flash"
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_temperature: float = 0.2
+    gemini_max_output_tokens: int = 300
 
     # Inference
     max_sequence_length: int = 512
