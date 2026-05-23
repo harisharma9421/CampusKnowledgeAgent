@@ -30,6 +30,8 @@ const env = {
   // AI Engine
   AI_ENGINE_URL: process.env.AI_ENGINE_URL || 'http://localhost:8000',
   AI_ENGINE_TIMEOUT: parseInt(process.env.AI_ENGINE_TIMEOUT, 10) || 30000,
+  AI_ENGINE_RETRIES: parseInt(process.env.AI_ENGINE_RETRIES, 10) || 2,
+  AI_ENGINE_RETRY_DELAY_MS: parseInt(process.env.AI_ENGINE_RETRY_DELAY_MS, 10) || 350,
 
   // Firebase
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',

@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     faiss_index_path: str = "vectorstore/index/campus.index"
     embedding_batch_size: int = 32
     semantic_similarity_threshold: float = 0.32
+    allow_model_download: bool = False
 
     # Google Vertex AI / Gemini
     google_cloud_project: str = ""

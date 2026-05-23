@@ -237,6 +237,15 @@ const hasUnsupportedProtectedFacts = (response, draftResponse, context) => {
   return [...produced].some((token) => !allowed.has(token));
 };
 
+const isUsableChatResponse = (response) => {
+  const value = String(response || '').trim();
+  if (value.length < 8) {
+    return false;
+  }
+  const alphaNumericCount = (value.match(/[a-z0-9]/gi) || []).length;
+  return alphaNumericCount / value.length > 0.35;
+};
+
 const shouldUseGeminiResponse = (geminiResult, draftResponse, geminiContext) => {
   if (!geminiResult?.response || geminiResult.status !== 'ok') {
     return false;
@@ -305,13 +314,16 @@ export const processChatQuery = async ({ query, user }) => {
   const finalResponse = shouldUseGeminiResponse(geminiResult, draftResponse, geminiContext)
     ? geminiResult.response
     : draftResponse;
+  const validatedResponse = isUsableChatResponse(finalResponse)
+    ? finalResponse
+    : 'I could not produce a reliable answer from the verified academic data available right now.';
 
   return {
     success: true,
     query,
     intent: intentResult.intent,
     confidence: Number(intentResult.confidence.toFixed(2)),
-    response: finalResponse,
+    response: validatedResponse,
     metadata: {
       source:
         geminiResult.status === 'ok'

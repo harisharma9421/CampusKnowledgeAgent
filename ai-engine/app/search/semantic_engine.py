@@ -20,6 +20,8 @@ from app.config.settings import AI_ENGINE_ROOT, settings
 os.environ.setdefault("USE_TF", "0")
 os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 
 @dataclass
@@ -82,7 +84,27 @@ class SemanticSearchEngine:
             try:
                 from sentence_transformers import SentenceTransformer
 
-                self.model = SentenceTransformer(settings.sentence_transformer_model)
+                try:
+                    self.model = SentenceTransformer(
+                        settings.sentence_transformer_model,
+                        local_files_only=True,
+                    )
+                except TypeError:
+                    self.model = SentenceTransformer(settings.sentence_transformer_model)
+                except Exception as offline_exc:
+                    if not settings.allow_model_download:
+                        raise RuntimeError(
+                            "Sentence Transformer model is not available in the local cache. "
+                            "Pre-download the model or set ALLOW_MODEL_DOWNLOAD=true."
+                        ) from offline_exc
+
+                    logger.warning(
+                        "[Semantic] Local model cache unavailable, attempting download: {}",
+                        offline_exc,
+                    )
+                    os.environ.pop("HF_HUB_OFFLINE", None)
+                    os.environ.pop("TRANSFORMERS_OFFLINE", None)
+                    self.model = SentenceTransformer(settings.sentence_transformer_model)
                 get_dimension = getattr(self.model, "get_embedding_dimension", None)
                 if get_dimension is None:
                     get_dimension = getattr(self.model, "get_sentence_embedding_dimension")

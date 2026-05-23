@@ -13,6 +13,35 @@ const client = axios.create({
 
 const unwrapAiResponse = (response) => response.data?.data || response.data || {};
 
+const sleep = (ms) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+const isRetryableAiError = (error) => {
+  if (!error.response) {
+    return true;
+  }
+  return error.response.status >= 500 || error.response.status === 429;
+};
+
+const requestWithRetry = async (operation) => {
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= env.AI_ENGINE_RETRIES; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (attempt >= env.AI_ENGINE_RETRIES || !isRetryableAiError(error)) {
+        throw error;
+      }
+      await sleep(env.AI_ENGINE_RETRY_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  throw lastError;
+};
+
 const keywordIntentRules = [
   {
     intent: 'schedule_update',
@@ -73,7 +102,7 @@ export const classifyIntent = async (query, user) => {
   const startedAt = Date.now();
 
   try {
-    const response = await client.post('/infer/classify', {
+    const response = await requestWithRetry(() => client.post('/infer/classify', {
       query,
       user_id: user.id,
       context: {
@@ -83,7 +112,7 @@ export const classifyIntent = async (query, user) => {
         division: user.division,
         batch: user.batch,
       },
-    });
+    }));
 
     const data = unwrapAiResponse(response);
     const intent = data.predicted_intent || data.intent || 'unknown';
@@ -123,9 +152,9 @@ export const generateEmbeddings = async (texts) => {
   const startedAt = Date.now();
 
   try {
-    const response = await client.post('/embed/generate', {
+    const response = await requestWithRetry(() => client.post('/embed/generate', {
       texts: Array.isArray(texts) ? texts : [texts],
-    });
+    }));
     const data = unwrapAiResponse(response);
     return {
       ...data,
@@ -149,7 +178,7 @@ export const getHealth = async () => {
   const startedAt = Date.now();
 
   try {
-    const response = await client.get('/health');
+    const response = await requestWithRetry(() => client.get('/health'));
     return {
       ...unwrapAiResponse(response),
       provider: 'ai_engine',
@@ -178,14 +207,14 @@ export const semanticSearch = async ({
   const startedAt = Date.now();
 
   try {
-    const response = await client.post('/embed/search', {
+    const response = await requestWithRetry(() => client.post('/embed/search', {
       query,
       top_k: topK,
       collection,
       documents,
       namespace,
       threshold,
-    });
+    }));
     const data = unwrapAiResponse(response);
     return {
       results: data.results || [],
@@ -218,7 +247,7 @@ export const getFaissHealth = async () => {
   const startedAt = Date.now();
 
   try {
-    const response = await client.get('/embed/faiss-health');
+    const response = await requestWithRetry(() => client.get('/embed/faiss-health'));
     return {
       ...unwrapAiResponse(response),
       provider: 'ai_engine',
@@ -240,14 +269,14 @@ export const enhanceWithGemini = async ({ query, intent, draftResponse, context 
   const startedAt = Date.now();
 
   try {
-    const response = await client.post('/gemini/enhance', {
+    const response = await requestWithRetry(() => client.post('/gemini/enhance', {
       query,
       intent,
       draft_response: draftResponse,
       context,
       instruction:
         'Improve readability only. Do not add facts, dates, names, rooms, subjects, or notices not present in context.',
-    });
+    }));
     const data = unwrapAiResponse(response);
     const status = data.status || (data.response || data.enhanced_response ? 'ok' : 'empty');
     return {
