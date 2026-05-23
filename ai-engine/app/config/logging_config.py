@@ -10,6 +10,9 @@ from app.config.settings import settings
 
 def configure_logging() -> None:
     """Configure Loguru logger with appropriate handlers and format."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     logger.remove()  # Remove default handler
 
     log_format = (
