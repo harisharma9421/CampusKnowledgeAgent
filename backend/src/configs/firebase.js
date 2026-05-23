@@ -21,6 +21,7 @@ export const isFirebaseReady = () => firebaseReady;
  */
 const configureEmulator = () => {
   if (!env.FIREBASE_USE_EMULATOR) {
+    delete process.env.FIRESTORE_EMULATOR_HOST;
     return;
   }
 

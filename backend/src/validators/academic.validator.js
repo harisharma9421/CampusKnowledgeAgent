@@ -8,8 +8,15 @@ const branchEnum = z.enum([
   'civil_engineering',
   'mechanical_engineering',
 ]);
+const exactBranchEnum = z.enum([
+  'computer_engineering',
+  'electronics_engineering',
+  'civil_engineering',
+  'mechanical_engineering',
+]);
 
 const semesterSchema = z.coerce.number().int().min(0).max(8);
+const exactSemesterSchema = z.coerce.number().int().min(1).max(8);
 const pageSchema = z.coerce.number().int().min(1).default(1);
 const limitSchema = z.coerce.number().int().min(1).max(100).default(20);
 const activeSchema = z
@@ -138,6 +145,104 @@ export const geminiTestSchema = z.object({
 export const notificationParamsSchema = z.object({
   id: z.string().trim().min(1).max(160),
 });
+
+export const documentParamsSchema = notificationParamsSchema;
+
+const timetableSlotSchema = z
+  .object({
+    slotId: z.string().trim().min(1).max(80).optional(),
+    startTime: z.string().trim().min(1).max(20),
+    endTime: z.string().trim().min(1).max(20),
+    label: z.string().trim().min(1).max(80).optional(),
+    subjectCode: z.string().trim().max(40).optional(),
+    subject: z.string().trim().min(1).max(160),
+    type: z.enum(['theory', 'lab', 'tutorial', 'project', 'exam', 'other']).default('theory'),
+    facultyId: z.string().trim().max(120).optional().nullable(),
+    facultyName: z.string().trim().max(120).optional().nullable(),
+    room: z.string().trim().max(80).optional().nullable(),
+    batch: z.enum(['all', ...BATCHES]).optional().nullable(),
+  })
+  .passthrough();
+
+const scheduleSchema = z
+  .object({
+    monday: z.array(timetableSlotSchema).optional(),
+    tuesday: z.array(timetableSlotSchema).optional(),
+    wednesday: z.array(timetableSlotSchema).optional(),
+    thursday: z.array(timetableSlotSchema).optional(),
+    friday: z.array(timetableSlotSchema).optional(),
+    saturday: z.array(timetableSlotSchema).optional(),
+  })
+  .default({});
+
+export const timetableCreateSchema = z.object({
+  branch: exactBranchEnum,
+  semester: exactSemesterSchema,
+  division: z.enum(DIVISIONS),
+  academicYear: z.string().trim().min(4).max(20).optional(),
+  effectiveFrom: z.string().trim().min(4).max(40).optional(),
+  effectiveTo: z.string().trim().min(4).max(40).optional(),
+  schedule: scheduleSchema,
+  isActive: z.boolean().optional(),
+});
+
+export const timetableUpdateSchema = timetableCreateSchema.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  { message: 'Provide at least one timetable field to update.' }
+);
+
+export const noticeCreateSchema = z.object({
+  title: z.string().trim().min(3).max(160),
+  content: z.string().trim().min(5).max(4000),
+  category: z.enum(['academic', 'exam', 'administrative', 'placement']),
+  branch: branchEnum.default('all'),
+  semester: semesterSchema.default(0),
+  division: z.enum(['all', ...DIVISIONS]).default('all'),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
+  attachmentUrl: z.string().trim().url().optional().nullable(),
+  expiresAt: z.string().datetime().optional().nullable(),
+  isActive: z.boolean().optional(),
+});
+
+export const noticeUpdateSchema = noticeCreateSchema.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  { message: 'Provide at least one notice field to update.' }
+);
+
+export const eventCreateSchema = z.object({
+  title: z.string().trim().min(3).max(160),
+  description: z.string().trim().min(5).max(4000),
+  eventDate: z.string().datetime(),
+  registrationDeadline: z.string().datetime().optional().nullable(),
+  venue: z.string().trim().min(2).max(160),
+  organizer: z.string().trim().max(160).optional(),
+  category: z.enum(['academic', 'technical', 'cultural', 'sports', 'placement']),
+  branch: branchEnum.default('all'),
+  semester: semesterSchema.default(0),
+  maxParticipants: z.coerce.number().int().min(1).max(10000).optional().nullable(),
+  registrationUrl: z.string().trim().max(500).optional().nullable(),
+  isActive: z.boolean().optional(),
+});
+
+export const eventUpdateSchema = eventCreateSchema.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  { message: 'Provide at least one event field to update.' }
+);
+
+export const faqCreateSchema = z.object({
+  question: z.string().trim().min(5).max(300),
+  answer: z.string().trim().min(5).max(4000),
+  category: z.enum(['erp', 'timetable', 'notices', 'events', 'faculty', 'academic']),
+  branch: branchEnum.default('all'),
+  semester: semesterSchema.default(0),
+  tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
+  isActive: z.boolean().optional(),
+});
+
+export const faqUpdateSchema = faqCreateSchema.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  { message: 'Provide at least one FAQ field to update.' }
+);
 
 export const studentScopeSchema = z.object({
   branch: z.enum([

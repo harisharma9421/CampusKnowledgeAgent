@@ -107,16 +107,6 @@ export const AuthProvider = ({ children }) => {
     [applySession]
   );
 
-  const register = useCallback(
-    async (payload) => {
-      setError(null);
-      const response = await authService.register(payload);
-      applySession(response);
-      return response;
-    },
-    [applySession]
-  );
-
   const logout = useCallback(async () => {
     try {
       await authService.logout();
@@ -136,11 +126,10 @@ export const AuthProvider = ({ children }) => {
       error,
       setError,
       login,
-      register,
       logout,
       refreshProfile,
     }),
-    [user, token, isAuthenticated, isLoading, error, login, register, logout, refreshProfile]
+    [user, token, isAuthenticated, isLoading, error, login, logout, refreshProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

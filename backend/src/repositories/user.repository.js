@@ -75,6 +75,56 @@ export const findUserByEmail = async (email) => {
   return { id: doc.id, ...doc.data() };
 };
 
+const findFirstByField = async (collection, field, value) => {
+  const db = await ensureFirestore();
+  const snapshot = await db.collection(collection).where(field, '==', value).limit(1).get();
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+};
+
+export const findUserByRollNumber = async (rollNumber) =>
+  findFirstByField(collectionName, 'rollNumber', rollNumber.trim().toUpperCase());
+
+export const findUserByEmployeeId = async (employeeId) =>
+  findFirstByField(collectionName, 'employeeId', employeeId.trim().toUpperCase());
+
+export const findUserByPrn = async (prn) => {
+  const student = await findFirstByField(COLLECTIONS.STUDENTS, 'prn', prn.trim().toUpperCase());
+  if (!student?.userId) {
+    return null;
+  }
+  return findUserById(student.userId);
+};
+
+export const findUserByLoginIdentifier = async (identifier) => {
+  const value = identifier.trim();
+  const normalizedEmail = value.toLowerCase();
+
+  if (value.includes('@')) {
+    const byEmail = await findUserByEmail(normalizedEmail);
+    if (byEmail) {
+      return byEmail;
+    }
+  }
+
+  const byRollNumber = await findUserByRollNumber(value);
+  if (byRollNumber) {
+    return byRollNumber;
+  }
+
+  const byEmployeeId = await findUserByEmployeeId(value);
+  if (byEmployeeId) {
+    return byEmployeeId;
+  }
+
+  return findUserByPrn(value);
+};
+
 export const listUsers = async () => {
   const db = await ensureFirestore();
   const snapshot = await db.collection(collectionName).get();
@@ -132,6 +182,10 @@ export const updateUser = async (id, updates) => {
 export default {
   findUserById,
   findUserByEmail,
+  findUserByRollNumber,
+  findUserByEmployeeId,
+  findUserByPrn,
+  findUserByLoginIdentifier,
   listUsers,
   createUser,
   updateUser,

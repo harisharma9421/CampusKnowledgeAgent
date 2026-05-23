@@ -29,36 +29,31 @@ const navItems = [
     label: 'Timetable',
     to: '/timetable',
     icon: <CalendarIcon />,
-    badge: 'Phase 5',
-    disabled: true,
   },
   {
     label: 'Notices',
     to: '/notices',
     icon: <NoticeIcon />,
-    badge: 'Phase 5',
-    disabled: true,
   },
   {
     label: 'Events',
     to: '/events',
     icon: <EventIcon />,
-    badge: 'Phase 5',
-    disabled: true,
   },
   {
     label: 'Faculty',
     to: '/faculty',
     icon: <FacultyIcon />,
-    badge: 'Phase 5',
-    disabled: true,
   },
   {
     label: 'FAQ',
     to: '/faq',
     icon: <FaqIcon />,
-    badge: 'Phase 5',
-    disabled: true,
+  },
+  {
+    label: 'Notifications',
+    to: '/notifications',
+    icon: <NoticeIcon />,
   },
 ];
 

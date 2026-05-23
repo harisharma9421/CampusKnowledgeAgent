@@ -1,6 +1,8 @@
 import { AppError } from '../middleware/errorHandler.js';
+import { COLLECTIONS } from '../constants/collections.js';
 import paginate from '../utils/pagination.js';
 import * as academicRepository from '../repositories/academic.repository.js';
+import * as notificationService from './notification.service.js';
 
 const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -119,6 +121,75 @@ const reduceTimetableDay = (record, day) => {
   };
 };
 
+const normalizeSchedule = (schedule = {}) =>
+  dayOrder.reduce((result, day) => {
+    result[day] = Array.isArray(schedule[day]) ? schedule[day] : [];
+    return result;
+  }, {});
+
+const getExistingDocument = async (collection, id) => {
+  const record = await academicRepository.getDocumentById(collection, id);
+  if (!record) {
+    throw new AppError('Academic record not found.', 404, 'ACADEMIC_RECORD_NOT_FOUND');
+  }
+  return record;
+};
+
+const buildAudience = ({ branch = 'all', semester = 0, division = 'all', batch = 'all' } = {}) => ({
+  role: 'student',
+  branch,
+  semester,
+  division,
+  batch,
+});
+
+const actorFields = (actor, action) => ({
+  [`${action}By`]: actor?.id || actor?.uid || null,
+  [`${action}ByName`]: actor?.displayName || actor?.email || null,
+});
+
+const triggerTimetableNotification = (timetable, actor, action = 'updated') =>
+  notificationService.triggerScheduleUpdateAlert(
+    {
+      title: `Timetable ${action} for Semester ${timetable.semester} ${timetable.division}`,
+      message: `The timetable for ${timetable.branch} Semester ${timetable.semester} Division ${timetable.division} was ${action}.`,
+      audience: buildAudience(timetable),
+      channel: 'in_app',
+      priority: 'high',
+      relatedCollection: COLLECTIONS.TIMETABLE,
+      relatedId: timetable.id,
+    },
+    actor
+  );
+
+const triggerNoticeNotification = (notice, actor, action = 'created') =>
+  notificationService.triggerNoticeAlert(
+    {
+      title: action === 'created' ? `New notice: ${notice.title}` : `Notice updated: ${notice.title}`,
+      message: notice.content,
+      audience: buildAudience(notice),
+      channel: 'in_app',
+      priority: notice.priority || 'normal',
+      relatedCollection: COLLECTIONS.NOTICES,
+      relatedId: notice.id,
+    },
+    actor
+  );
+
+const triggerEventNotification = (event, actor, action = 'created') =>
+  notificationService.triggerEventNotification(
+    {
+      title: action === 'created' ? `New event: ${event.title}` : `Event updated: ${event.title}`,
+      message: `${event.title} is scheduled at ${event.venue}.`,
+      audience: buildAudience({ ...event, division: 'all' }),
+      channel: 'in_app',
+      priority: 'normal',
+      relatedCollection: COLLECTIONS.EVENTS,
+      relatedId: event.id,
+    },
+    actor
+  );
+
 export const getTimetable = async (query, user) => {
   const scopedQuery = scopeTimetableQuery(query, user);
   const records = await academicRepository.listTimetable();
@@ -139,6 +210,42 @@ export const getTimetable = async (query, user) => {
   return withPagination(filtered, scopedQuery);
 };
 
+export const createTimetable = async (payload, actor) => {
+  const timetable = await academicRepository.createDocument(COLLECTIONS.TIMETABLE, {
+    ...payload,
+    schedule: normalizeSchedule(payload.schedule),
+    isActive: payload.isActive ?? true,
+    source: 'manual_entry',
+    ...actorFields(actor, 'created'),
+  });
+  const notification = await triggerTimetableNotification(timetable, actor, 'created');
+
+  return {
+    timetable,
+    notification: notification.notification,
+  };
+};
+
+export const updateTimetable = async (id, updates, actor) => {
+  const existing = await getExistingDocument(COLLECTIONS.TIMETABLE, id);
+  const payload = {
+    ...updates,
+    ...(updates.schedule ? { schedule: normalizeSchedule(updates.schedule) } : {}),
+    ...actorFields(actor, 'updated'),
+  };
+  const timetable = await academicRepository.updateDocument(COLLECTIONS.TIMETABLE, id, payload);
+  const notification = await triggerTimetableNotification(
+    { ...existing, ...timetable },
+    actor,
+    'updated'
+  );
+
+  return {
+    timetable,
+    notification: notification.notification,
+  };
+};
+
 export const getNotices = async (query, user) => {
   const records = applyStudentVisibility(await academicRepository.listNotices(), user);
 
@@ -151,6 +258,37 @@ export const getNotices = async (query, user) => {
     .filter((record) => includesText(record, ['title', 'content', 'category'], query.search));
 
   return withPagination(sortByIsoDate(filtered, 'createdAt', query.sort || 'desc'), query);
+};
+
+export const createNotice = async (payload, actor) => {
+  const notice = await academicRepository.createDocument(COLLECTIONS.NOTICES, {
+    ...payload,
+    isActive: payload.isActive ?? true,
+    source: 'manual_entry',
+    postedBy: actor?.id || actor?.uid || null,
+    postedByName: actor?.displayName || actor?.email || null,
+    ...actorFields(actor, 'created'),
+  });
+  const notification = await triggerNoticeNotification(notice, actor, 'created');
+
+  return {
+    notice,
+    notification: notification.notification,
+  };
+};
+
+export const updateNotice = async (id, updates, actor) => {
+  await getExistingDocument(COLLECTIONS.NOTICES, id);
+  const notice = await academicRepository.updateDocument(COLLECTIONS.NOTICES, id, {
+    ...updates,
+    ...actorFields(actor, 'updated'),
+  });
+  const notification = await triggerNoticeNotification(notice, actor, 'updated');
+
+  return {
+    notice,
+    notification: notification.notification,
+  };
 };
 
 export const getEvents = async (query, user) => {
@@ -166,6 +304,37 @@ export const getEvents = async (query, user) => {
     .filter((record) => includesText(record, ['title', 'description', 'venue', 'organizer'], query.search));
 
   return withPagination(sortByIsoDate(filtered, 'eventDate', 'asc'), query);
+};
+
+export const createEvent = async (payload, actor) => {
+  const event = await academicRepository.createDocument(COLLECTIONS.EVENTS, {
+    ...payload,
+    isActive: payload.isActive ?? true,
+    source: 'manual_entry',
+    organizer: payload.organizer || actor?.displayName || actor?.email || 'Campus team',
+    organizerId: actor?.id || actor?.uid || null,
+    ...actorFields(actor, 'created'),
+  });
+  const notification = await triggerEventNotification(event, actor, 'created');
+
+  return {
+    event,
+    notification: notification.notification,
+  };
+};
+
+export const updateEvent = async (id, updates, actor) => {
+  await getExistingDocument(COLLECTIONS.EVENTS, id);
+  const event = await academicRepository.updateDocument(COLLECTIONS.EVENTS, id, {
+    ...updates,
+    ...actorFields(actor, 'updated'),
+  });
+  const notification = await triggerEventNotification(event, actor, 'updated');
+
+  return {
+    event,
+    notification: notification.notification,
+  };
 };
 
 export const getFaculty = async (query, user) => {
@@ -196,6 +365,28 @@ export const getFaq = async (query, user) => {
     .sort((a, b) => a.category.localeCompare(b.category) || a.question.localeCompare(b.question));
 
   return withPagination(filtered, query);
+};
+
+export const createFaq = async (payload, actor) => {
+  const faq = await academicRepository.createDocument(COLLECTIONS.FAQ, {
+    ...payload,
+    embedding: [],
+    isActive: payload.isActive ?? true,
+    source: 'manual_entry',
+    ...actorFields(actor, 'created'),
+  });
+
+  return { faq };
+};
+
+export const updateFaq = async (id, updates, actor) => {
+  await getExistingDocument(COLLECTIONS.FAQ, id);
+  const faq = await academicRepository.updateDocument(COLLECTIONS.FAQ, id, {
+    ...updates,
+    ...actorFields(actor, 'updated'),
+  });
+
+  return { faq };
 };
 
 export const getNotifications = async (query, user) => {
@@ -248,10 +439,18 @@ export const getDayNameFromDate = (date = new Date()) => {
 
 export default {
   getTimetable,
+  createTimetable,
+  updateTimetable,
   getNotices,
+  createNotice,
+  updateNotice,
   getEvents,
+  createEvent,
+  updateEvent,
   getFaculty,
   getFaq,
+  createFaq,
+  updateFaq,
   getNotifications,
   markNotificationRead,
   getAcademicContextForUser,

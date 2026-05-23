@@ -18,8 +18,8 @@ const LandingPage = () => {
           >
             Sign in
           </Link>
-          <Link to="/register" className="btn-primary text-sm px-4 py-2 rounded-lg">
-            Get Started
+          <Link to="/login" className="btn-primary text-sm px-4 py-2 rounded-lg">
+            Access Portal
           </Link>
         </nav>
       </header>

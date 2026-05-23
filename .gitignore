@@ -97,6 +97,7 @@ firestore-debug.log
 .firebase/
 firebase-service-account.json
 serviceAccountKey.json
+*firebase-adminsdk*.json
 
 # ---- Testing ----
 coverage/

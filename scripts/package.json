@@ -1,0 +1,10 @@
+{
+  "name": "campus-erp-seed",
+  "private": true,
+  "scripts": {
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.10.0"
+  }
+}

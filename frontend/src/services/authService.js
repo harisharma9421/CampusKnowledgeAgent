@@ -5,15 +5,7 @@
 import apiClient from './apiClient.js';
 
 /**
- * @param {object} payload
- */
-export const register = async (payload) => {
-  const response = await apiClient.post('/auth/register', payload);
-  return response.data;
-};
-
-/**
- * @param {{ email: string, password: string }} payload
+ * @param {{ identifier: string, password: string }} payload
  */
 export const login = async (payload) => {
   const response = await apiClient.post('/auth/login', payload);
@@ -35,4 +27,4 @@ export const verifyToken = async () => {
   return response.data;
 };
 
-export default { register, login, logout, getMe, verifyToken };
+export default { login, logout, getMe, verifyToken };

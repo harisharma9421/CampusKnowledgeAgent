@@ -79,10 +79,10 @@ export const registerUser = async (input) => {
  * @param {{ email: string, password: string }} input
  */
 export const loginUser = async (input) => {
-  const user = await userRepository.findUserByEmail(input.email);
+  const user = await userRepository.findUserByLoginIdentifier(input.identifier);
 
   if (!user) {
-    throw new AppError('Invalid email or password.', 401, AUTH_ERRORS.INVALID_CREDENTIALS);
+    throw new AppError('Invalid login ID or password.', 401, AUTH_ERRORS.INVALID_CREDENTIALS);
   }
 
   if (!user.isActive) {
@@ -91,7 +91,7 @@ export const loginUser = async (input) => {
 
   const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
   if (!passwordMatch) {
-    throw new AppError('Invalid email or password.', 401, AUTH_ERRORS.INVALID_CREDENTIALS);
+    throw new AppError('Invalid login ID or password.', 401, AUTH_ERRORS.INVALID_CREDENTIALS);
   }
 
   const updatedUser = await userRepository.updateUser(user.id, {

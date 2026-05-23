@@ -57,10 +57,10 @@ const Navbar = () => {
         </button>
 
         {/* Notification bell (placeholder) */}
-        <button className="btn-ghost p-2 rounded-lg relative" aria-label="Notifications">
+        <Link to="/notifications" className="btn-ghost p-2 rounded-lg relative" aria-label="Notifications">
           <BellIcon />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full" />
-        </button>
+        </Link>
 
         <div className="flex items-center gap-2">
           <Link

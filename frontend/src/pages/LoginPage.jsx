@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/ui/Logo.jsx';
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -10,7 +10,7 @@ const LoginPage = () => {
   const { login, setError } = useAuth();
   const from = location.state?.from || '/dashboard';
 
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ identifier: '', password: '' });
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
 
@@ -43,7 +43,9 @@ const LoginPage = () => {
             <Logo size="lg" linkTo="/" />
           </div>
           <h1 className="text-2xl font-bold text-surface-900">Welcome back</h1>
-          <p className="text-sm text-surface-500 mt-1">Sign in to your campus account</p>
+          <p className="text-sm text-surface-500 mt-1">
+            Use your seeded PRN, roll number, employee ID, or admin email
+          </p>
         </div>
 
         <div className="card p-8 shadow-card-hover">
@@ -58,19 +60,19 @@ const LoginPage = () => {
             )}
 
             <div>
-              <label htmlFor="email" className="label">
-                Email
+              <label htmlFor="identifier" className="label">
+                Login ID
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="identifier"
+                name="identifier"
+                type="text"
+                autoComplete="username"
                 required
                 className="input"
-                value={form.email}
+                value={form.identifier}
                 onChange={handleChange}
-                placeholder="you@college.edu"
+                placeholder="PRN2026CE0001 or CE-FAC-001"
               />
             </div>
 
@@ -102,12 +104,8 @@ const LoginPage = () => {
               )}
             </button>
           </form>
-
-          <p className="text-center text-sm text-surface-500 mt-6">
-            Don&apos;t have an account?{' '}
-            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-700">
-              Create one
-            </Link>
+          <p className="text-center text-xs text-surface-500 mt-6">
+            Accounts are managed from seeded Firestore data by campus staff.
           </p>
         </div>
       </div>

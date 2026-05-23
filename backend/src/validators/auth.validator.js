@@ -74,7 +74,7 @@ export const registerSchema = z
   });
 
 export const loginSchema = z.object({
-  email: z.string().trim().email('A valid email address is required'),
+  identifier: z.string().trim().min(2, 'PRN, roll number, employee ID, or email is required').max(120),
   password: z.string().min(1, 'Password is required'),
 });
 
