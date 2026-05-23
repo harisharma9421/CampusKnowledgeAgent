@@ -23,8 +23,7 @@ const navItems = [
     label: 'AI Chatbot',
     to: '/chat',
     icon: <ChatIcon />,
-    badge: 'Phase 6',
-    disabled: true,
+    badge: 'Live',
   },
   {
     label: 'Timetable',

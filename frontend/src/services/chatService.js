@@ -1,9 +1,11 @@
 import apiClient from './apiClient.js';
 
-export const sendChatQuery = (query, sessionId = null) =>
-  apiClient.post('/chat/query', {
+export const sendChatQuery = async (query, sessionId = null) => {
+  const response = await apiClient.post('/chat/query', {
     query,
     ...(sessionId ? { sessionId } : {}),
   });
+  return response.data;
+};
 
 export default { sendChatQuery };

@@ -1,172 +1,185 @@
-import Card, { CardBody, CardHeader } from '../components/ui/Card.jsx';
+import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import Badge from '../components/ui/Badge.jsx';
+import Card, { CardBody, CardHeader } from '../components/ui/Card.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
-/**
- * DashboardPage — Main application dashboard
- * Shows system status, quick stats, and navigation cards.
- * Data will be populated in later phases.
- */
+const branchLabels = {
+  computer_engineering: 'Computer Engineering',
+  electronics_engineering: 'Electronics Engineering',
+  civil_engineering: 'Civil Engineering',
+  mechanical_engineering: 'Mechanical Engineering',
+};
+
+const roleContent = {
+  student: {
+    title: 'Student Dashboard',
+    summary: 'Timetable, notices, events, faculty, and FAQ answers are routed through the AI assistant.',
+    prompts: [
+      'What is my timetable today?',
+      'Show my latest notices',
+      'Which faculty can help with Data Structures?',
+    ],
+  },
+  faculty: {
+    title: 'Faculty Dashboard',
+    summary: 'Academic notices, event context, and schedule updates are available through backend AI orchestration.',
+    prompts: [
+      'Show schedule update notifications',
+      'Which events are upcoming?',
+      'Summarize the latest academic notices',
+    ],
+  },
+  admin: {
+    title: 'Admin Dashboard',
+    summary: 'Institution-wide academic context is connected to diagnostics, semantic search, and response validation.',
+    prompts: [
+      'Test the AI pipeline for latest notices',
+      'Find semantic matches for postponed workshop',
+      'Show current AI retrieval status',
+    ],
+  },
+};
+
+const pipelineCards = [
+  { label: 'Intent Engine', value: 'DistilBERT', status: 'Active' },
+  { label: 'Semantic Search', value: 'FAISS', status: 'Active' },
+  { label: 'Enhancement', value: 'Gemini', status: 'Guarded' },
+  { label: 'Data Source', value: 'Firestore', status: 'Grounded' },
+];
+
 const DashboardPage = () => {
   const { user } = useAuth();
+  const content = roleContent[user?.role] || roleContent.student;
+  const academicScope = [
+    user?.branch ? branchLabels[user.branch] || user.branch : null,
+    user?.semester ? `Semester ${user.semester}` : null,
+    user?.division ? `Division ${user.division}` : null,
+  ].filter(Boolean);
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* ── Page Header ──────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="section-title">Dashboard</h1>
-        <p className="section-subtitle">
-          Welcome back{user?.displayName ? `, ${user.displayName}` : ''} — {user?.role} dashboard
-        </p>
-      </div>
-
-      {/* ── System Status Banner ─────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-primary-50 border border-primary-200">
-        <div className="w-2.5 h-2.5 rounded-full bg-primary-500 animate-pulse-slow shrink-0" />
-        <p className="text-sm text-primary-700 font-medium">
-          Phase 2 — Firebase authentication and JWT authorization are active. Academic APIs arrive in Phase 4.
-        </p>
-      </div>
-
-      {/* ── Stats Grid ───────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
-      </div>
-
-      {/* ── Main Content Grid ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Development Roadmap */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <h2 className="text-base font-semibold text-surface-800">Development Roadmap</h2>
-            </CardHeader>
-            <CardBody className="p-0">
-              <ul className="divide-y divide-surface-100">
-                {roadmapItems.map((item) => (
-                  <RoadmapItem key={item.phase} {...item} />
-                ))}
-              </ul>
-            </CardBody>
-          </Card>
-        </div>
-
-        {/* Tech Stack */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <Card>
-            <CardHeader>
-              <h2 className="text-base font-semibold text-surface-800">Tech Stack</h2>
-            </CardHeader>
+          <h1 className="section-title">{content.title}</h1>
+          <p className="section-subtitle">
+            Welcome back{user?.displayName ? `, ${user.displayName}` : ''}.
+          </p>
+        </div>
+        <Link to="/chat" className="btn-primary w-full md:w-auto">
+          <ChatIcon />
+          Open Chatbot
+        </Link>
+      </div>
+
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card>
+          <CardBody>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <Badge variant="success">AI platform online</Badge>
+                <h2 className="mt-3 text-xl font-semibold text-surface-900">
+                  Backend-orchestrated academic assistant
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-surface-600">
+                  {content.summary}
+                </p>
+              </div>
+              <div className="rounded-lg border border-surface-200 bg-surface-50 px-4 py-3 text-sm text-surface-600">
+                <p className="font-medium text-surface-900">{user?.role || 'member'}</p>
+                <p className="mt-1">{academicScope.join(' / ') || 'Campus scope'}</p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-surface-800">Account Scope</h2>
+          </CardHeader>
+          <CardBody className="space-y-3">
+            <ScopeRow label="Role" value={user?.role || 'member'} />
+            <ScopeRow label="Branch" value={user?.branch ? branchLabels[user.branch] || user.branch : 'All'} />
+            <ScopeRow label="Semester" value={user?.semester ? String(user.semester) : 'All'} />
+            <ScopeRow label="Division" value={user?.division || 'All'} />
+          </CardBody>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {pipelineCards.map((item) => (
+          <Card key={item.label}>
             <CardBody>
-              <ul className="space-y-3">
-                {techStack.map((item) => (
-                  <li key={item.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{item.emoji}</span>
-                      <span className="text-sm font-medium text-surface-700">{item.name}</span>
-                    </div>
-                    <Badge variant={item.status === 'active' ? 'success' : 'neutral'}>
-                      {item.version}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-surface-500">{item.label}</p>
+                  <p className="mt-1 text-lg font-semibold text-surface-900">{item.value}</p>
+                </div>
+                <Badge variant="primary">{item.status}</Badge>
+              </div>
             </CardBody>
           </Card>
-        </div>
-      </div>
+        ))}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-surface-800">Quick Chat</h2>
+          </CardHeader>
+          <CardBody>
+            <div className="grid gap-3 md:grid-cols-3">
+              {content.prompts.map((prompt) => (
+                <Link
+                  key={prompt}
+                  to="/chat"
+                  state={{ prompt }}
+                  className="rounded-lg border border-surface-200 bg-white p-4 text-sm font-medium text-surface-700 transition hover:border-primary-200 hover:text-primary-700 hover:shadow-card"
+                >
+                  {prompt}
+                </Link>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h2 className="text-base font-semibold text-surface-800">Pipeline Contract</h2>
+          </CardHeader>
+          <CardBody>
+            <ol className="space-y-3 text-sm text-surface-600">
+              {['Backend receives query', 'AI engine classifies intent', 'FAISS ranks context', 'Gemini polishes grounded response'].map((step) => (
+                <li key={step} className="flex gap-3">
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary-500" />
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </CardBody>
+        </Card>
+      </section>
     </div>
   );
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-import PropTypes from 'prop-types';
-
-const StatCard = ({ label, value, icon, color }) => (
-  <Card hoverable>
-    <CardBody className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${color}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-surface-900">{value}</p>
-        <p className="text-sm text-surface-500">{label}</p>
-      </div>
-    </CardBody>
-  </Card>
+const ScopeRow = ({ label, value }) => (
+  <div className="flex items-center justify-between gap-3 text-sm">
+    <span className="text-surface-500">{label}</span>
+    <span className="truncate font-medium capitalize text-surface-800">{value}</span>
+  </div>
 );
 
-StatCard.propTypes = {
+const ChatIcon = () => (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h8M8 14h5m8-2a9 9 0 11-4.25-7.64L21 4l-.86 4.25A8.96 8.96 0 0121 12z" />
+  </svg>
+);
+
+ScopeRow.propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
-  icon: PropTypes.string.isRequired,
-  color: PropTypes.string.isRequired,
 };
-
-const RoadmapItem = ({ phase, title, status, description }) => {
-  const statusConfig = {
-    complete: { badge: 'success', label: 'Complete' },
-    'in-progress': { badge: 'warning', label: 'In Progress' },
-    upcoming: { badge: 'neutral', label: 'Upcoming' },
-  };
-  const config = statusConfig[status] || statusConfig.upcoming;
-
-  return (
-    <li className="flex items-start gap-4 px-6 py-4">
-      <div className="shrink-0 w-8 h-8 rounded-full bg-surface-100 flex items-center justify-center text-xs font-bold text-surface-600">
-        {phase}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-semibold text-surface-800">{title}</p>
-          <Badge variant={config.badge}>{config.label}</Badge>
-        </div>
-        <p className="text-xs text-surface-500 mt-0.5">{description}</p>
-      </div>
-    </li>
-  );
-};
-
-RoadmapItem.propTypes = {
-  phase: PropTypes.number.isRequired,
-  title: PropTypes.string.isRequired,
-  status: PropTypes.oneOf(['complete', 'in-progress', 'upcoming']).isRequired,
-  description: PropTypes.string.isRequired,
-};
-
-// ── Static Data ───────────────────────────────────────────────────────────────
-
-const statCards = [
-  { label: 'API Endpoints', value: '1', icon: '⚡', color: 'bg-blue-50' },
-  { label: 'AI Models', value: '3', icon: '🧠', color: 'bg-purple-50' },
-  { label: 'Data Collections', value: '6', icon: '🗄️', color: 'bg-orange-50' },
-  { label: 'Team Members', value: '6', icon: '👥', color: 'bg-green-50' },
-];
-
-const roadmapItems = [
-  { phase: 1, title: 'Monorepo Foundation', status: 'complete', description: 'React frontend, Node.js backend, Python AI engine scaffolding' },
-  { phase: 2, title: 'Firebase + Authentication', status: 'complete', description: 'Firestore users, JWT auth, login/register, protected routes' },
-  { phase: 3, title: 'Dummy ERP Dataset', status: 'upcoming', description: '200+ students, timetables, notices, events, faculty seeders' },
-  { phase: 4, title: 'Dummy ERP Dataset', status: 'upcoming', description: '200+ students, timetables, notices, events, faculty' },
-  { phase: 5, title: 'REST API Layer', status: 'upcoming', description: 'All academic data endpoints with Firebase integration' },
-  { phase: 6, title: 'DistilBERT Intent Engine', status: 'upcoming', description: 'NLP intent classification for academic queries' },
-  { phase: 7, title: 'Semantic Search (FAISS)', status: 'upcoming', description: 'Sentence Transformers + FAISS vector search' },
-  { phase: 8, title: 'Gemini Integration', status: 'upcoming', description: 'Advanced reasoning via Vertex AI' },
-  { phase: 9, title: 'Chatbot UI', status: 'upcoming', description: 'Full conversational chat interface' },
-];
-
-const techStack = [
-  { name: 'React + Vite', emoji: '⚛️', version: '18.3', status: 'active' },
-  { name: 'Tailwind CSS', emoji: '🎨', version: '3.4', status: 'active' },
-  { name: 'Node.js + Express', emoji: '🟢', version: '4.19', status: 'active' },
-  { name: 'Python FastAPI', emoji: '🐍', version: '0.111', status: 'active' },
-  { name: 'Firebase Firestore', emoji: '🔥', version: 'Active', status: 'active' },
-  { name: 'DistilBERT', emoji: '🧠', version: 'Phase 6', status: 'pending' },
-  { name: 'FAISS', emoji: '🔍', version: 'Phase 7', status: 'pending' },
-  { name: 'Gemini AI', emoji: '🤖', version: 'Phase 8', status: 'pending' },
-];
 
 export default DashboardPage;
+
