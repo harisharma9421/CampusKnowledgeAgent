@@ -75,6 +75,12 @@ export const findUserByEmail = async (email) => {
   return { id: doc.id, ...doc.data() };
 };
 
+export const listUsers = async () => {
+  const db = await ensureFirestore();
+  const snapshot = await db.collection(collectionName).get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
 /**
  * @param {object} userData
  * @returns {Promise<object>}
@@ -126,6 +132,7 @@ export const updateUser = async (id, updates) => {
 export default {
   findUserById,
   findUserByEmail,
+  listUsers,
   createUser,
   updateUser,
   sanitizeUser,

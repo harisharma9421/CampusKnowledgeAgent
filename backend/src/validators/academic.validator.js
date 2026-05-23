@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BATCHES, DIVISIONS } from '../constants/auth.js';
+import { BATCHES, DIVISIONS, ROLE_LIST } from '../constants/auth.js';
 
 const branchEnum = z.enum([
   'all',
@@ -85,6 +85,26 @@ export const notificationsQuerySchema = z.object({
     .optional()
     .transform((value) => (value === undefined ? false : value === 'true')),
   active: activeSchema,
+});
+
+const notificationAudienceSchema = z.object({
+  role: z.enum(['all', ...ROLE_LIST]).default('student'),
+  branch: branchEnum.default('all'),
+  semester: semesterSchema.default(0),
+  division: z.enum(['all', ...DIVISIONS]).default('all'),
+  batch: z.enum(['all', ...BATCHES]).default('all'),
+});
+
+export const notificationTriggerSchema = z.object({
+  type: z.enum(['notice', 'event', 'schedule_update', 'reminder']),
+  title: z.string().trim().min(3).max(160),
+  message: z.string().trim().min(5).max(2000),
+  audience: notificationAudienceSchema.default({}),
+  channel: z.enum(['in_app', 'email', 'both']).default('in_app'),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
+  relatedCollection: z.enum(['notices', 'events', 'timetable', 'notifications']).optional(),
+  relatedId: z.string().trim().min(1).max(160).optional(),
+  scheduledAt: z.string().datetime().optional(),
 });
 
 export const chatQuerySchema = z.object({

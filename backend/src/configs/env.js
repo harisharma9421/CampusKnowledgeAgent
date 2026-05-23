@@ -52,6 +52,14 @@ const env = {
   LOG_LEVEL: process.env.LOG_LEVEL || 'debug',
   LOG_DIR: process.env.LOG_DIR || 'logs',
 
+  // Email / Notifications
+  SMTP_HOST: process.env.SMTP_HOST || '',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT, 10) || 587,
+  SMTP_SECURE: process.env.SMTP_SECURE === 'true',
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
+  EMAIL_FROM: process.env.EMAIL_FROM || 'Campus Knowledge Agent <no-reply@nexuscampus.local>',
+
   // Derived helpers
   isDevelopment() {
     return this.NODE_ENV === 'development';

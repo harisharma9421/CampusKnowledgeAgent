@@ -27,6 +27,19 @@ export const listCollection = async (collectionName) => {
   return snapshot.docs.map(toRecord);
 };
 
+export const createDocument = async (collectionName, payload) => {
+  const db = await ensureFirestore();
+  const docRef = db.collection(collectionName).doc();
+  const now = new Date().toISOString();
+  const record = {
+    ...payload,
+    createdAt: payload.createdAt || now,
+    updatedAt: payload.updatedAt || now,
+  };
+  await docRef.set(record);
+  return { id: docRef.id, ...record };
+};
+
 export const getDocumentById = async (collectionName, id) => {
   const db = await ensureFirestore();
   const doc = await db.collection(collectionName).doc(id).get();
@@ -68,6 +81,7 @@ export const markNotificationRead = async (notificationId, userId) => {
 
 export default {
   listCollection,
+  createDocument,
   getDocumentById,
   updateDocument,
   listStudents,
